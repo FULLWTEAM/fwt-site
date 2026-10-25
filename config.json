@@ -12,9 +12,9 @@
       "id": 2,
       "nome": "Aim_Botz",
       "tipo": "Aim/Mira",
-      "link": "https://steamcommunity.com/workshop/browse/?appid=730",
+      "link": "https://steamcommunity.com/sharedfiles/filedetails/?id=3070244462",
       "desc": "Bots configuráveis para treino de spray control e flicks a diferentes distâncias.",
-      "on": false
+      "on": true
     },
     {
       "id": 3,
