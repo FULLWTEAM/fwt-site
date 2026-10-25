@@ -1,0 +1,6 @@
+FULL W TEAM - SITE PRINCIPAL
+Isto e um site estatico (HTML). NAO precisa de Hugo nem de comando de build.
+1. Aloja esta pasta com HTTPS. Mais simples: app.netlify.com/drop e arrasta a PASTA fwt-site (descompactada).
+2. Se usares GitHub + Netlify: poe os ficheiros desta pasta na RAIZ do repositorio. O netlify.toml ja desativa o build.
+3. Abre o endereco no Chrome/Edge e clica em Instalar.
+4. Para atualizar: substitui o config.json (gerado no painel admin) ou o index.html.

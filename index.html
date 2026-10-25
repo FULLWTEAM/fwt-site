@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FULL W TEAM</title>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#73E639"><link rel="apple-touch-icon" href="icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.js"></script>
+<style>
+:root{--g:#73E639;--bg:#1E1E1E;--tx:#F4F6F2;--mut:#9aa097;box-sizing:border-box;color-scheme:dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,"SF Pro Display","Inter",system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+.bg{position:fixed;inset:0;z-index:0;background:radial-gradient(60% 50% at 15% 10%,rgba(115,230,57,.28),transparent 70%),radial-gradient(50% 40% at 90% 80%,rgba(115,230,57,.14),transparent 70%),linear-gradient(160deg,#262626,#151515)}
+.bg svg{position:absolute;right:-8%;bottom:-6%;width:70vw;max-width:760px;opacity:.07}
+.glass{position:relative;background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.03));backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid rgba(255,255,255,.14);border-radius:28px;box-shadow:inset 0 1.5px 0 rgba(255,255,255,.4),inset 0 -1px 0 rgba(255,255,255,.06),0 20px 50px -20px rgba(0,0,0,.7);transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.22) 0%,transparent 28%);mix-blend-mode:overlay}
+.lift:hover{transform:translateY(-4px) scale(1.01)}
+.tap{transition:transform .2s cubic-bezier(.34,1.56,.64,1),filter .2s}.tap:active{transform:scale(.94)}
+.btn{background:var(--g);color:#0d1a04;font-weight:700;border-radius:18px;padding:.7rem 1.1rem;box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6),0 8px 24px -8px rgba(115,230,57,.7);display:inline-flex;align-items:center;gap:.5rem;justify-content:center;text-decoration:none}
+.btn:hover{filter:brightness(1.08)}.btn:disabled{opacity:.6}
+.ghost{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:var(--tx);border-radius:16px;padding:.5rem .85rem;display:inline-flex;align-items:center;gap:.4rem;font-size:.85rem;text-decoration:none}
+.ghost:hover{background:rgba(255,255,255,.15)}
+.inp{width:100%;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:.75rem 1rem;color:var(--tx);outline:none;font:inherit}
+.inp:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(115,230,57,.22)}
+.wcut{clip-path:polygon(0 0,24.1% 14%,24.1% 57%,48.3% 28.5%,48.3% 72.1%,24.1% 100%,0 86%,0 0,100% 0,100% 86%,75.9% 100%,51.7% 72.1%,51.7% 28.5%,75.9% 57%,75.9% 14%,100% 0)}
+.fade{animation:fade .5s cubic-bezier(.22,1,.36,1) both}
+@keyframes fade{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+.sw{width:50px;height:30px;border-radius:99px;background:rgba(255,255,255,.18);position:relative;transition:background .3s;flex:none}
+.sw i{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .35s cubic-bezier(.34,1.56,.64,1);box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.sw.on{background:var(--g)}.sw.on i{transform:translateX(20px)}
+.title{background:linear-gradient(180deg,#fff,var(--g) 85%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 24px rgba(115,230,57,.35))}
+.nav{overflow-x:auto;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}
+.bar{height:10px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+.bar>div{height:100%;background:var(--g);border-radius:99px;box-shadow:0 0 14px #73E639;transition:width .1s}
+code{background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.35rem .6rem;font-size:.85rem;color:var(--g)}
+</style>
+</head>
+<body>
+<div class="bg"><svg viewBox="148 164 203 172" fill="#73E639"><polygon points="148,164 197,188 197,262 246,213 246,288 197,336 148,312"/><polygon points="351,164 302,188 302,262 253,213 253,288 302,336 351,312"/></svg></div>
+<div id="root" style="position:relative;z-index:1"></div>
+<script>
+const {useState,useEffect}=React;const html=htm.bind(React.createElement);
+const P={out:"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9",plus:"M12 5v14M5 12h14",edit:"M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z",trash:"M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2",play:"M6 3l14 9-14 9Z",lock:"M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4",sl:"M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6",user:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8",shield:"M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z",check:"M20 6L9 17l-5-5",x:"M18 6L6 18M6 6l12 12",link:"M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1",gear:"M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1",zap:"M13 2L3 14h9l-1 8 10-12h-9z",cpu:"M6 6h12v12H6zM9 9h6v6H9zM9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4",users:"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8",msg:"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",ext:"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3",copy:"M9 9h11v11H9zM5 15H4V4h11v1",map:"M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z",mem:"M2 8h20v8H2zM6 8v8M10 8v8M14 8v8M18 8v8",db:"M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",mon:"M3 4h18v12H3zM8 20h8M12 16v4",dl:"M12 3v12M7 10l5 5 5-5M4 21h16",rf:"M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"};
+const I=({n,s=18})=>html`<svg width=${s} height=${s} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d=${P[n]}/></svg>`;
+const Logo=({s=34})=>html`<svg width=${s} height=${s*.847} viewBox="148 164 203 172" fill="#73E639"><polygon points="148,164 197,188 197,262 246,213 246,288 197,336 148,312"/><polygon points="351,164 302,188 302,262 253,213 253,288 302,336 351,312"/></svg>`;
+const M="var(--mut)";
+const TYPES=["Granadas","Aim/Mira","Retake","Posicionamento"];
+const TC={"Granadas":"#F5A524","Aim/Mira":"#73E639","Retake":"#38BDF8","Posicionamento":"#A78BFA"};
+const tagc=t=>TC[t]||"#9aa097";
+const WS="https://steamcommunity.com/workshop/browse/?appid=730";
+const SEED=[
+{id:1,nome:"Mirage",tipo:"Granadas",link:WS,desc:"Smokes, molotovs e flashes para execuções A e B. Lineups marcados no chão.",on:true},
+{id:2,nome:"Aim_Botz",tipo:"Aim/Mira",link:WS,desc:"Bots configuráveis para treino de spray control e flicks a diferentes distâncias.",on:true},
+{id:3,nome:"Inferno",tipo:"Retake",link:WS,desc:"Cenários de retake 3v4 nos bombsites A e B com utilitário limitado.",on:true},
+{id:4,nome:"Dust2",tipo:"Posicionamento",link:WS,desc:"Ângulos, off-angles e posições de hold para CT e T.",on:false}];
+const ACC0={
+ konkelfwt:{pass:"konkelFWT2026",admin:true,disp:"Konkel",steam:"https://steamcommunity.com/id/konkelfwt/",email:"",phone:""},
+ fergod99fwt:{pass:"fergod991",disp:"FerGod",steam:"https://steamcommunity.com/profiles/76561199682614793",email:"",phone:""},
+ leodobigodefwt:{pass:"bigode123",disp:"Leo do Bigode",steam:"https://steamcommunity.com",email:"",phone:""},
+ oleofwt:{pass:"manuoleofwt",disp:"Oleo",steam:"https://steamcommunity.com/profiles/76561199871391790",email:"",phone:""},
+ pixkitofwt:{pass:"pixkofwt",disp:"Pixkito",steam:"https://steamcommunity.com/id/pixkito",email:"",phone:""}};
+ACC0.oliveirexfwt={pass:"oliveirafwt",disp:"Oliveirex",steam:"https://steamcommunity.com",email:"",phone:"",hidden:true};
+const ROSTER=["konkelfwt","fergod99fwt","leodobigodefwt","oleofwt","pixkitofwt"];
+const hs=s=>{let x=5381;for(let i=0;i<s.length;i++)x=((x<<5)+x+s.charCodeAt(i))|0;return x};
+const LK={discord:"https://discord.gg/NgYBeKcKzn",steam:"https://steamcommunity.com/groups/fullwteam",gname:"FULL W TEAM | FWT",news:""};
+const copy=async t=>{try{await navigator.clipboard.writeText(t);return true}catch(e){return false}};
+
+function Login({accts,onLogin}){
+ const [u,setU]=useState("");const [p,setP]=useState("");const [err,setErr]=useState("");const [rm,setRm]=useState(false);
+ const go=()=>{const k=u.trim().toLowerCase();const a=accts[k];
+  if(a&&a.pass===p){try{rm?localStorage.setItem("fwt-login",JSON.stringify({u:k,h:hs(p)})):localStorage.removeItem("fwt-login")}catch(e){}onLogin(k)}else setErr("Utilizador ou palavra-passe incorretos.")};
+ return html`<div class="min-h-screen flex items-center justify-center p-5"><div class="glass fade w-full max-w-sm p-8">
+  <div class="flex flex-col items-center text-center mb-7">
+   <div class="glass flex items-center justify-center mb-4" style=${{width:84,height:84,borderRadius:26}}><${Logo} s=${48}/></div>
+   <h1 class="title text-3xl font-extrabold tracking-tight">FULL W TEAM</h1>
+   <p class="text-sm mt-1" style=${{color:M}}>Inicia sessão para continuar</p></div>
+  <div class="space-y-3">
+   <input class="inp" placeholder="Utilizador" autocapitalize="none" value=${u} onInput=${e=>{setU(e.target.value);setErr("")}} onKeyDown=${e=>e.key==="Enter"&&go()}/>
+   <input class="inp" type="password" placeholder="Palavra-passe" value=${p} onInput=${e=>{setP(e.target.value);setErr("")}} onKeyDown=${e=>e.key==="Enter"&&go()}/>
+   ${err&&html`<p class="text-sm text-red-400 px-1">${err}</p>`}
+   <div role="switch" aria-checked=${rm} class="flex items-center justify-between px-1 cursor-pointer select-none" onClick=${()=>setRm(!rm)}><span class="text-sm">Memorizar login</span><div class=${"sw "+(rm?"on":"")}><i></i></div></div>
+   <button class="btn tap w-full" onClick=${go}><${I} n="lock"/> Entrar</button></div></div></div>`;
+}
+
+function Settings({user,acc,onSave,onClose}){
+ const [d,setD]=useState(acc.disp);const [em,setEm]=useState(acc.email);const [ph,setPh]=useState(acc.phone);
+ const [c,setC]=useState("");const [n,setN]=useState("");const [r,setR]=useState("");const [msg,setMsg]=useState(null);
+ const save=()=>{
+  const patch={disp:d.trim()||acc.disp,email:em.trim(),phone:ph.trim()};
+  if(c||n||r){
+   if(c!==acc.pass)return setMsg({e:1,t:"A password atual está incorreta."});
+   if(n.length<6)return setMsg({e:1,t:"A nova password precisa de pelo menos 6 caracteres."});
+   if(n!==r)return setMsg({e:1,t:"A confirmação não coincide com a nova password."});
+   patch.pass=n;setC("");setN("");setR("");
+  }
+  onSave(patch);setMsg({t:"Definições guardadas."});
+ };
+ const F=(l,v,s,o={})=>html`<label class="block"><span class="text-xs font-semibold px-1" style=${{color:M}}>${l}</span><input class="inp mt-1" value=${v} onInput=${e=>{s(e.target.value);setMsg(null)}} ...${o}/></label>`;
+ return html`<div class="fixed inset-0 z-50 flex items-center justify-center p-4" style=${{background:"rgba(0,0,0,.55)",backdropFilter:"blur(8px)"}} onClick=${onClose}>
+  <div class="glass fade w-full max-w-md p-6 overflow-y-auto" style=${{maxHeight:"92vh"}} onClick=${e=>e.stopPropagation()}>
+   <div class="flex items-center justify-between mb-4"><h3 class="text-xl font-extrabold">Definições de Conta</h3><button class="ghost tap" onClick=${onClose}><${I} n="x" s=${16}/></button></div>
+   <p class="text-xs mb-4" style=${{color:M}}>Utilizador de login: <b style=${{color:"var(--g)"}}>${user}</b> (não pode ser alterado)</p>
+   <div class="space-y-3">
+    ${F("Nome de Exibição",d,setD)}
+    ${F("E-mail de Recuperação",em,setEm,{type:"email",placeholder:"nome@exemplo.com"})}
+    ${F("Número de Telefone",ph,setPh,{type:"tel",placeholder:"+351 9XX XXX XXX"})}
+    <div class="pt-2 text-sm font-bold">Alterar Password</div>
+    ${F("Password Atual",c,setC,{type:"password"})}
+    ${F("Nova Password",n,setN,{type:"password"})}
+    ${F("Confirmar Nova Password",r,setR,{type:"password"})}
+    ${msg&&html`<p class=${"text-sm px-1 "+(msg.e?"text-red-400":"")} style=${msg.e?{}:{color:"var(--g)"}}>${msg.t}</p>`}
+    <button class="btn tap w-full" onClick=${save}><${I} n="check" s=${16}/> Guardar alterações</button></div></div></div>`;
+}
+
+function Training({m,onClose}){
+ const [pr,setPr]=useState(0);
+ useEffect(()=>{const t=setInterval(()=>setPr(v=>Math.min(100,v+4)),90);return()=>clearInterval(t)},[]);
+ const s=["A carregar mapa da Oficina…","A sincronizar lineups…","A preparar bots e utilitário…","Rotina pronta!"][Math.min(3,Math.floor(pr/34))];
+ return html`<div class="fixed inset-0 z-50 flex items-center justify-center p-5" style=${{background:"rgba(0,0,0,.55)",backdropFilter:"blur(8px)"}}>
+  <div class="glass fade w-full max-w-sm p-7 text-center">
+   <div class="text-xs font-semibold tracking-widest mb-1" style=${{color:tagc(m.tipo)}}>${m.tipo.toUpperCase()}</div>
+   <h3 class="text-2xl font-extrabold mb-1">${m.nome}</h3><p class="text-sm mb-5" style=${{color:M}}>${s}</p>
+   <div class="bar"><div style=${{width:pr+"%"}}></div></div><div class="text-sm mt-2 mb-5 font-semibold">${pr}%</div>
+   <button class="btn tap w-full" onClick=${onClose}>${pr>=100?"Começar treino":"Cancelar"}</button></div></div>`;
+}
+
+function Hub({disp,maps}){
+ const [tr,setTr]=useState(null);const act=maps.filter(m=>m.on);
+ return html`<div class="space-y-6 fade">
+  <section class="glass p-7 sm:p-10 overflow-hidden">
+   <div class="wcut" style=${{position:"absolute",right:-20,top:-20,width:140,height:119,background:"rgba(115,230,57,.12)"}}></div>
+   <p class="text-sm font-semibold" style=${{color:"var(--g)"}}>Bem-vindo de volta, ${disp}!</p>
+   <h1 class="title text-5xl sm:text-7xl font-black tracking-tight mt-2">FULL W TEAM</h1>
+   <p class="mt-3 max-w-xl" style=${{color:M}}>Escolhe uma rotina e treina com a equipa.</p></section>
+  ${LK.news&&html`<section class="glass p-4 flex items-center gap-3 fade" style=${{borderRadius:22}}><span style=${{color:"var(--g)"}}><${I} n="msg" s=${18}/></span><span class="text-sm">${LK.news}</span></section>`}<section><h2 class="font-bold text-xl mb-4">Hub de Treino</h2>
+  ${act.length===0?html`<div class="glass p-8 text-center" style=${{color:M}}>Ainda não há mapas ativos. O admin pode ativá-los no Painel de Configuração.</div>`:
+  html`<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">${act.map(m=>html`<div key=${m.id} class="glass lift p-6 flex flex-col fade">
+   <div class="wcut" style=${{position:"absolute",right:14,top:14,width:30,height:25,background:tagc(m.tipo),opacity:.5}}></div>
+   <span class="self-start text-xs font-bold px-3 py-1 rounded-full" style=${{color:tagc(m.tipo),background:tagc(m.tipo)+"22",border:"1px solid "+tagc(m.tipo)+"55"}}>${m.tipo}</span>
+   <h3 class="text-2xl font-extrabold mt-3">${m.nome}</h3><p class="text-sm mt-2 flex-1" style=${{color:M}}>${m.desc}</p>
+   <div class="flex gap-2 mt-5"><button class="btn tap flex-1" onClick=${()=>setTr(m)}><${I} n="play" s=${16}/> Iniciar Rotina de Treino</button>
+   ${m.link&&html`<a class="ghost tap" href=${m.link} target="_blank" rel="noopener noreferrer" title="Oficina"><${I} n="link" s=${16}/></a>`}</div></div>`)}</div>`}</section>
+  ${tr&&html`<${Training} m=${tr} onClose=${()=>setTr(null)}/>`}</div>`;
+}
+
+function Tool({icon,title,desc,label,children}){
+ const [pr,setPr]=useState(0);const [st,setSt]=useState("idle");
+ useEffect(()=>{if(st!=="run")return;const i=setInterval(()=>setPr(v=>Math.min(100,v+5)),80);return()=>clearInterval(i)},[st]);
+ useEffect(()=>{if(pr>=100&&st==="run")setSt("done")},[pr,st]);
+ return html`<div class="glass lift p-6 flex flex-col gap-4">
+  <div class="flex gap-4"><div class="flex items-center justify-center flex-none" style=${{width:52,height:52,borderRadius:18,background:"rgba(115,230,57,.15)",color:"var(--g)"}}><${I} n=${icon} s=${24}/></div>
+   <div><h3 class="font-extrabold">${title}</h3><p class="text-sm mt-1" style=${{color:M}}>${desc}</p></div></div>
+  ${st!=="idle"&&html`<div><div class="bar"><div style=${{width:pr+"%"}}></div></div><div class="text-xs mt-1" style=${{color:M}}>${st==="done"?"Concluído (simulação)":"A processar… "+pr+"%"}</div></div>`}
+  ${st==="done"&&html`<div class="fade space-y-2 text-sm">${children}</div>`}
+  <button class="btn tap self-start" disabled=${st==="run"} onClick=${()=>{setPr(0);setSt("run")}}><${I} n="zap" s=${16}/> ${st==="done"?"Executar de novo":label}</button></div>`;
+}
+
+function Optimize(){
+ const [th,setTh]=useState(8);const [cp,setCp]=useState(false);
+ const cmd="-high -threads "+th;
+ const L=a=>html`<ol class="list-decimal pl-5 space-y-1" style=${{color:M}}>${a.map((x,i)=>html`<li key=${i}>${x}</li>`)}</ol>`;
+ return html`<div class="space-y-5 fade">
+  <div><h2 class="font-bold text-xl">Otimização do CS2</h2><p class="text-sm mt-1" style=${{color:M}}>Mais fluidez sem tocar nas texturas nem nos gráficos do jogo. As barras são uma simulação: o browser não limpa nada no teu PC, por isso segue os passos indicados em cada ferramenta.</p></div>
+  <div class="grid gap-4 lg:grid-cols-2">
+   <${Tool} icon="db" title="Limpar Cache de Shaders DirectX/Vulkan" desc="Remove engasgos e stutters causados por shaders corrompidos ou desatualizados." label="Limpar cache">
+    ${L(["Steam → Definições → Shader Pre-Caching: apaga o cache do CS2 (ou da Steam).","Windows: apaga o conteúdo de %LocalAppData%\\NVIDIA\\DXCache (NVIDIA) ou usa a Limpeza de Disco → Cache de Shaders DirectX.","Reabre o CS2: os shaders são recompilados no primeiro arranque."])}<//>
+   <${Tool} icon="cpu" title="Otimizar Agendamento do CPU (High Priority)" desc="Gera as opções de arranque para o CS2 correr com prioridade máxima." label="Gerar comandos">
+    <div class="flex items-center gap-2"><span style=${{color:M}}>Threads do CPU:</span><select class="inp" style=${{width:90,padding:".4rem .7rem"}} value=${th} onChange=${e=>setTh(+e.target.value)}>${[4,6,8,12,16].map(x=>html`<option key=${x} value=${x} style=${{background:"#1E1E1E"}}>${x}</option>`)}</select></div>
+    <div class="flex items-center gap-2 flex-wrap"><code>${cmd}</code><button class="ghost tap" onClick=${async()=>{await copy(cmd);setCp(true);setTimeout(()=>setCp(false),1500)}}><${I} n=${cp?"check":"copy"} s=${14}/> ${cp?"Copiado":"Copiar"}</button></div>
+    <p style=${{color:M}}>Steam → Biblioteca → CS2 → Propriedades → Opções de Arranque. O efeito de -threads varia conforme o CPU.</p><//>
+   <${Tool} icon="mem" title="Otimizar Memória RAM em Segundo Plano" desc="Liberta RAM fechando processos desnecessários do Windows antes de jogar." label="Otimizar RAM">
+    ${[["Navegadores e launchers inativos","412 MB"],["Serviços de atualização em background","186 MB"],["Overlays e apps de arranque","97 MB"]].map(([a,b])=>html`<div key=${a} class="flex justify-between"><span style=${{color:M}}>${a}</span><b style=${{color:"var(--g)"}}>${b}</b></div>`)}
+    <p style=${{color:M}}>Valores ilustrativos. Na prática: Gestor de Tarefas → Arranque, e fecha o que não precisas.</p><//>
+   <${Tool} icon="mon" title="Desativar Otimizações de Ecrã Inteiro" desc="Reduz o atraso de input (input lag) ao jogar em ecrã inteiro." label="Ver passo a passo">
+    ${L(["Abre a pasta do jogo: Steam → CS2 → Gerir → Procurar ficheiros locais.","Vai a game\\bin\\win64 e clica com o botão direito em cs2.exe → Propriedades.","Separador Compatibilidade → ativa Desativar otimizações de ecrã inteiro.","Aplicar → OK e reinicia o CS2."])}<//>
+  </div></div>`;
+}
+
+function Roster({accts}){
+ const gr=["#73E639,#1f6d0f","#38BDF8,#1d4ed8","#F5A524,#b45309","#A78BFA,#6d28d9","#f472b6,#be185d"];
+ return html`<div class="space-y-5 fade"><h2 class="font-bold text-xl">Roster</h2>
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">${ROSTER.map((k,i)=>{const a=accts[k];return html`<div key=${k} class="glass lift p-6 text-center overflow-hidden">
+   <div class="wcut" style=${{position:"absolute",right:14,top:14,width:28,height:24,background:"var(--g)",opacity:.4}}></div>
+   <div class="mx-auto flex items-center justify-center text-4xl font-black" style=${{width:96,height:96,borderRadius:32,background:"linear-gradient(135deg,"+gr[i]+")",boxShadow:"inset 0 2px 0 rgba(255,255,255,.5),0 14px 30px -10px rgba(0,0,0,.7)"}}>${a.disp.charAt(0).toUpperCase()}</div>
+   <h3 class="text-xl font-extrabold mt-4">${a.disp}</h3>
+   <p class="text-xs mt-1" style=${{color:M}}>@${k} · ${a.admin?"Admin":"Jogador"}</p>
+   <p class="text-xs mt-3 truncate" style=${{color:M}}>${a.steam.replace("https://","")}</p>
+   <a class="btn tap mt-4 w-full" href=${a.steam} target="_blank" rel="noopener noreferrer"><${I} n="ext" s=${16}/> Abrir Steam</a></div>`})}</div></div>`;
+}
+
+function Discord(){
+ const st=[["Online","128"],["Membros","412"],["Canais de voz","9"]];
+ return html`<div class="fade space-y-5"><div class="glass p-8 sm:p-12 overflow-hidden" style=${{background:"linear-gradient(135deg,rgba(88,101,242,.4),rgba(115,230,57,.12))"}}>
+  <div class="wcut" style=${{position:"absolute",right:-10,top:-10,width:150,height:127,background:"rgba(115,230,57,.14)"}}></div>
+  <div class="flex items-center gap-2 text-sm font-semibold"><span style=${{width:10,height:10,borderRadius:99,background:"var(--g)",boxShadow:"0 0 10px #73E639"}}></span> Servidor Online</div>
+  <h2 class="text-4xl sm:text-5xl font-black mt-3">Comunidade <span style=${{color:"var(--g)"}}>FWT</span></h2>
+  <p class="mt-3 max-w-lg" style=${{color:"#d4d8ff"}}>Scrims, lineups, tácticas e boa disposição. Junta-te à malta da FULL W TEAM.</p>
+  <div class="grid grid-cols-3 gap-3 mt-7 max-w-lg">${st.map(([a,b])=>html`<div key=${a} class="glass p-4 text-center" style=${{borderRadius:20}}><div class="text-2xl font-extrabold">${b}</div><div class="text-xs" style=${{color:M}}>${a}</div></div>`)}</div>
+  <a class="btn tap mt-8 text-lg" style=${{background:"linear-gradient(135deg,#5865F2,#73E639)",color:"#fff",padding:"1rem 1.6rem",borderRadius:22}} href=${LK.discord} target="_blank" rel="noopener noreferrer"><${I} n="msg" s=${22}/> Juntar-se ao Discord</a>
+  <p class="text-xs mt-4" style=${{color:M}}>Estatísticas do servidor fictícias, apenas ilustrativas.</p></div></div>`;
+}
+
+function SteamGroup(){
+ return html`<div class="fade"><div class="glass p-8 sm:p-12 overflow-hidden" style=${{background:"linear-gradient(135deg,rgba(27,40,56,.8),rgba(115,230,57,.1))"}}>
+  <div class="flex items-center gap-5 flex-wrap"><div class="glass flex items-center justify-center" style=${{width:92,height:92,borderRadius:28}}><${Logo} s=${54}/></div>
+   <div><p class="text-xs font-semibold tracking-widest" style=${{color:"var(--g)"}}>GRUPO · COMUNIDADE STEAM</p><h2 class="text-3xl sm:text-4xl font-black mt-1">${LK.gname}</h2><p class="text-sm mt-1" style=${{color:M}}>Fundada em Portugal 🇵🇹 · Equipa de Counter-Strike 2</p></div></div>
+  <div class="grid grid-cols-3 gap-3 mt-7 max-w-lg">${[["Membros","—"],["Jogo","CS2"],["País","PT"]].map(([a,b])=>html`<div key=${a} class="glass p-4 text-center" style=${{borderRadius:20}}><div class="text-2xl font-extrabold">${b}</div><div class="text-xs" style=${{color:M}}>${a}</div></div>`)}</div>
+  <a class="btn tap mt-8 text-lg" style=${{padding:"1rem 1.6rem",borderRadius:22}} href=${LK.steam} target="_blank" rel="noopener noreferrer"><${I} n="users" s=${22}/> Entrar no Grupo da Steam</a></div></div>`;
+}
+
+function Config({maps,setMaps}){
+ const empty={nome:"",tipo:TYPES[0],link:"",desc:""};
+ const [f,setF]=useState(empty);const [ed,setEd]=useState(null);const set=k=>e=>setF({...f,[k]:e.target.value});
+ const save=()=>{if(!f.nome.trim())return;
+  if(ed){setMaps(maps.map(m=>m.id===ed?{...m,...f}:m));setEd(null)}else setMaps([...maps,{...f,id:Date.now(),on:true}]);setF(empty)};
+ return html`<div class="grid gap-6 lg:grid-cols-5 fade">
+  <div class="glass p-6 lg:col-span-2 self-start"><h2 class="font-bold text-lg mb-4">${ed?"Editar mapa":"Novo mapa de treino"}</h2><div class="space-y-3">
+   <input class="inp" placeholder="Nome do Mapa (ex: Mirage)" value=${f.nome} onInput=${set("nome")}/>
+   <select class="inp" value=${f.tipo} onChange=${set("tipo")}>${TYPES.map(t=>html`<option key=${t} value=${t} style=${{background:"#1E1E1E"}}>${t}</option>`)}</select>
+   <input class="inp" placeholder="Link da Oficina (Workshop)" value=${f.link} onInput=${set("link")}/>
+   <textarea class="inp" rows="4" placeholder="Descrição técnica" value=${f.desc} onInput=${set("desc")}></textarea>
+   <div class="flex gap-2"><button class="btn tap flex-1" onClick=${save}><${I} n=${ed?"check":"plus"} s=${16}/> ${ed?"Guardar":"Adicionar"}</button>
+   ${ed&&html`<button class="ghost tap" onClick=${()=>{setEd(null);setF(empty)}}><${I} n="x" s=${16}/></button>`}</div></div></div>
+  <div class="lg:col-span-3 space-y-3"><h2 class="font-bold text-lg">Mapas registados (${maps.length})</h2>
+   ${maps.map(m=>html`<div key=${m.id} class="glass p-4 flex items-center gap-3 flex-wrap" style=${{borderRadius:22}}>
+    <div class="flex-1 min-w-[140px]"><div class="flex items-center gap-2"><b>${m.nome}</b><span class="text-[11px] font-bold px-2 py-0.5 rounded-full" style=${{color:tagc(m.tipo),background:tagc(m.tipo)+"22"}}>${m.tipo}</span></div><p class="text-xs mt-1" style=${{color:M}}>${m.desc||"—"}</p></div>
+    <button class=${"sw tap "+(m.on?"on":"")} aria-label="Ativar/Desativar" onClick=${()=>setMaps(maps.map(x=>x.id===m.id?{...x,on:!x.on}:x))}><i></i></button>
+    <button class="ghost tap" onClick=${()=>{setEd(m.id);setF({nome:m.nome,tipo:m.tipo,link:m.link,desc:m.desc})}}><${I} n="edit" s=${15}/> Editar</button>
+    <button class="ghost tap" style=${{color:"#f87171"}} onClick=${()=>{setMaps(maps.filter(x=>x.id!==m.id));if(ed===m.id){setEd(null);setF(empty)}}}><${I} n="trash" s=${15}/> Remover</button></div>`)}</div></div>`;
+}
+
+const Denied=()=>html`<div class="glass fade p-10 text-center max-w-md mx-auto"><div class="mx-auto mb-4 flex items-center justify-center" style=${{width:64,height:64,borderRadius:20,background:"rgba(248,113,113,.15)",color:"#f87171"}}><${I} n="lock" s=${28}/></div><h2 class="text-2xl font-extrabold">Acesso Negado</h2><p class="mt-2 text-sm" style=${{color:M}}>O Painel de Configuração é exclusivo do administrador.</p></div>`;
+
+function usePWA(){
+ const [ip,setIp]=useState(null);const [upd,setUpd]=useState(false);
+ const stand=!!((window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone);
+ useEffect(()=>{
+  const bip=e=>{e.preventDefault();setIp(e)};window.addEventListener("beforeinstallprompt",bip);
+  if(location.protocol.startsWith("http")&&"serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+  let base=null;
+  const h=s=>{let x=5381;for(let i=0;i<s.length;i++)x=((x<<5)+x+s.charCodeAt(i))|0;return x};
+  const chk=async()=>{try{const r=await fetch(location.href.split("#")[0],{cache:"no-store"});if(!r.ok)return;let tx=await r.text();try{const q=await fetch("config.json",{cache:"no-store"});if(q.ok)tx+=await q.text()}catch(e){}const v=h(tx);if(base===null)base=v;else if(v!==base)setUpd(true)}catch(e){}};
+  chk();const iv=setInterval(chk,60000);const vis=()=>{if(!document.hidden)chk()};document.addEventListener("visibilitychange",vis);
+  return()=>{window.removeEventListener("beforeinstallprompt",bip);clearInterval(iv);document.removeEventListener("visibilitychange",vis)};
+ },[]);
+ return{ip,setIp,upd,stand};
+}
+const Toast=({onClose})=>html`<div class="fixed left-0 right-0 bottom-4 z-[60] flex justify-center px-4"><div class="glass fade flex items-center gap-3 px-4 py-3" style=${{borderRadius:24}}><span style=${{color:"var(--g)"}}><${I} n="rf" s=${20}/></span><div class="text-sm"><b>Nova versão disponível</b><div class="text-xs" style=${{color:M}}>Atualiza para ver as novidades.</div></div><button class="btn tap" style=${{padding:".5rem .9rem",borderRadius:14}} onClick=${()=>location.reload()}>Atualizar</button><button class="ghost tap" aria-label="Fechar" onClick=${onClose}><${I} n="x" s=${14}/></button></div></div>`;
+function App(){
+ const [accts,setAccts]=useState(ACC0);const [user,setUser]=useState(()=>{try{const s=JSON.parse(localStorage.getItem("fwt-login"));if(s&&ACC0[s.u]&&hs(ACC0[s.u].pass)===s.h)return s.u}catch(e){}return null});const [tab,setTab]=useState("hub");
+ const [maps,setMaps]=useState(SEED);const [set,setSet]=useState(false);const pwa=usePWA();const [dis,setDis]=useState(false);const toast=pwa.upd&&!dis?html`<${Toast} onClose=${()=>setDis(true)}/>`:null;
+ if(!user)return html`<${Login} accts=${accts} onLogin=${k=>{setUser(k);setTab("hub")}}/>${toast}`;
+ const a=accts[user];
+ const tabs=[["hub","map","Hub de Treino"],["opt","zap","Otimização CS2"],["roster","users","Roster"],["discord","msg","Discord"],["steam","shield","Steam Group"],...(a.admin?[["config","sl","Configuração"]]:[])];
+ const body=tab==="config"?(a.admin?html`<${Config} maps=${maps} setMaps=${setMaps}/>`:html`<${Denied}/>`):
+  tab==="opt"?html`<${Optimize}/>`:tab==="roster"?html`<${Roster} accts=${accts}/>`:tab==="discord"?html`<${Discord}/>`:tab==="steam"?html`<${SteamGroup}/>`:html`<${Hub} disp=${a.disp} maps=${maps}/>`;
+ return html`<div class="max-w-6xl mx-auto p-4 sm:p-6 space-y-4">
+  <header class="glass flex items-center gap-3 px-4 py-3" style=${{borderRadius:26}}>
+   <${Logo} s=${34}/><b class="tracking-tight">FULL W TEAM</b>
+   <span class="text-xs hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full ml-auto" style=${{background:"rgba(255,255,255,.08)"}}><${I} n=${a.admin?"shield":"user"} s=${14}/>${a.disp}${a.admin?" · Admin":""}</span>
+   <button class="ghost tap ml-auto sm:ml-0" aria-label="Definições de Conta" onClick=${()=>setSet(true)}><${I} n="gear" s=${17}/><span class="hidden sm:inline">Definições</span></button>
+   <button class="ghost tap" onClick=${()=>{try{localStorage.removeItem("fwt-login")}catch(e){}setUser(null)}}><${I} n="out" s=${16}/> <span class="hidden sm:inline">Terminar Sessão</span></button></header>
+  <nav class="glass nav flex gap-1 p-1.5" style=${{borderRadius:22}}>${tabs.map(([id,ic,l])=>html`<button key=${id} onClick=${()=>setTab(id)} class="tap flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-semibold whitespace-nowrap" style=${{background:tab===id?"var(--g)":"transparent",color:tab===id?"#0d1a04":"var(--tx)"}}><${I} n=${ic} s=${16}/>${l}</button>`)}</nav>
+  ${body}
+  ${toast}${set&&html`<${Settings} user=${user} acc=${a} onClose=${()=>setSet(false)} onSave=${p=>setAccts({...accts,[user]:{...a,...p}})}/>`}</div>`;
+}
+function applyCfg(c){try{
+ if(c.maps){SEED.length=0;SEED.push(...c.maps)}
+ if(c.accounts){Object.keys(ACC0).forEach(k=>delete ACC0[k]);Object.assign(ACC0,c.accounts)}
+ if(c.roster){ROSTER.length=0;ROSTER.push(...c.roster.filter(k=>ACC0[k]))}
+ if(c.links)Object.assign(LK,c.links);if(c.news!==undefined)LK.news=c.news}catch(e){}}
+const go=()=>ReactDOM.createRoot(document.getElementById("root")).render(html`<${App}/>`);
+fetch("config.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(c=>{if(c)applyCfg(c)}).catch(()=>{}).then(go);
+</script>
+</body>
+</html>
