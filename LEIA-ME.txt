@@ -1,3 +1,2 @@
 FULL W TEAM - SITE PRINCIPAL (GitHub Pages)
 Coloca estes ficheiros na RAIZ do repositorio (substituindo os antigos).
-O site abre sem login; o login so e pedido para escrever no chat ou editar o perfil.
