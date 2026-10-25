@@ -103,7 +103,8 @@
     "gname": "FULL W TEAM | FWT",
     "db": "https://fwtsite-default-rtdb.firebaseio.com/",
     "dOnline": "ND",
-    "dMembers": "31"
+    "dMembers": "31",
+    "dVoice": "5"
   },
   "news": "SITE AINDA EM DESENVOLVIMENTO, QUALQUER BUG NO SITE REPORTEM NO SERVIDOR DO DISCORD\n",
   "site": {
