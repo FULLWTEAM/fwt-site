@@ -169,19 +169,6 @@
       "kind": "builtin"
     }
   ],
-  "servers": [
-    {
-      "id": "s1792946513183",
-      "name": "Novo servidor",
-      "ip": "",
-      "port": "27015",
-      "mode": "Treino",
-      "map": "",
-      "slots": "",
-      "pass": "",
-      "notes": "",
-      "on": true
-    }
-  ],
+  "servers": [],
   "mapsTs": 0
 }
