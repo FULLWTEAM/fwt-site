@@ -41,14 +41,19 @@ body{min-height:100dvh}.glass{overflow-wrap:anywhere}
 @media (hover:none){.lift:hover{transform:none}}
 @media (max-width:640px){.glass{border-radius:24px}.btn{padding:.75rem 1rem}.ghost{padding:.6rem .8rem}.inp{padding:.8rem .95rem}}
 @media (pointer:coarse){.ghost,.btn{min-height:44px}}
+.chat{display:none;flex-direction:column;overflow:hidden}
+.chat.open{display:flex;position:fixed;inset:12px;z-index:40}
+.msgs{flex:1;overflow-y:auto;overscroll-behavior:contain}
+.btn.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;border-radius:99px;width:56px;height:56px;padding:0}
+@media (min-width:1024px){.chat,.chat.open{display:flex;position:sticky;inset:auto;top:24px;z-index:auto;width:340px;flex:none;height:calc(100dvh - 48px)}.btn.fab{display:none}}
 </style>
 </head>
 <body>
 <div class="bg"><svg viewBox="148 164 203 172" fill="#73E639"><polygon points="148,164 197,188 197,262 246,213 246,288 197,336 148,312"/><polygon points="351,164 302,188 302,262 253,213 253,288 302,336 351,312"/></svg></div>
 <div id="root" style="position:relative;z-index:1"></div>
 <script>
-const {useState,useEffect}=React;const html=htm.bind(React.createElement);
-const P={out:"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9",plus:"M12 5v14M5 12h14",edit:"M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z",trash:"M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2",play:"M6 3l14 9-14 9Z",lock:"M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4",sl:"M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6",user:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8",shield:"M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z",check:"M20 6L9 17l-5-5",x:"M18 6L6 18M6 6l12 12",link:"M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1",gear:"M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1",zap:"M13 2L3 14h9l-1 8 10-12h-9z",cpu:"M6 6h12v12H6zM9 9h6v6H9zM9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4",users:"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8",msg:"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",ext:"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3",copy:"M9 9h11v11H9zM5 15H4V4h11v1",map:"M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z",mem:"M2 8h20v8H2zM6 8v8M10 8v8M14 8v8M18 8v8",db:"M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",mon:"M3 4h18v12H3zM8 20h8M12 16v4",dl:"M12 3v12M7 10l5 5 5-5M4 21h16",rf:"M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"};
+const {useState,useEffect,useRef}=React;const html=htm.bind(React.createElement);
+const P={out:"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9",plus:"M12 5v14M5 12h14",edit:"M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z",trash:"M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2",play:"M6 3l14 9-14 9Z",lock:"M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4",sl:"M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6",user:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8",shield:"M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z",check:"M20 6L9 17l-5-5",x:"M18 6L6 18M6 6l12 12",link:"M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1",gear:"M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1",zap:"M13 2L3 14h9l-1 8 10-12h-9z",cpu:"M6 6h12v12H6zM9 9h6v6H9zM9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4",users:"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8",msg:"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",ext:"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3",copy:"M9 9h11v11H9zM5 15H4V4h11v1",map:"M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z",mem:"M2 8h20v8H2zM6 8v8M10 8v8M14 8v8M18 8v8",db:"M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",mon:"M3 4h18v12H3zM8 20h8M12 16v4",dl:"M12 3v12M7 10l5 5 5-5M4 21h16",rf:"M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5",chev:"M6 9l6 6 6-6",send:"M22 2L11 13M22 2l-7 20-4-9-9-4z"};
 const I=({n,s=18})=>html`<svg width=${s} height=${s} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d=${P[n]}/></svg>`;
 const Logo=({s=34})=>html`<svg width=${s} height=${s*.847} viewBox="148 164 203 172" fill="#73E639"><polygon points="148,164 197,188 197,262 246,213 246,288 197,336 148,312"/><polygon points="351,164 302,188 302,262 253,213 253,288 302,336 351,312"/></svg>`;
 const M="var(--mut)";
@@ -72,7 +77,7 @@ const ROSTER=["konkelfwt","fergod99fwt","leodobigodefwt","oleofwt","pixkitofwt"]
 const hs=s=>{let x=5381;for(let i=0;i<s.length;i++)x=((x<<5)+x+s.charCodeAt(i))|0;return x};
 const MENU=[{"id": "hub", "label": "Hub de Treino", "icon": "map", "on": true, "kind": "builtin"}, {"id": "opt", "label": "Otimização CS2", "icon": "zap", "on": true, "kind": "builtin"}, {"id": "roster", "label": "Roster", "icon": "users", "on": true, "kind": "builtin"}, {"id": "discord", "label": "Discord", "icon": "msg", "on": true, "kind": "builtin"}, {"id": "steam", "label": "Steam Group", "icon": "shield", "on": true, "kind": "builtin"}];
 const SITE={"name": "FULL W TEAM", "sub": "Escolhe uma rotina e treina com a equipa.", "login": "Inicia sessão para continuar", "footer": ""};
-const LK={discord:"https://discord.gg/NgYBeKcKzn",steam:"https://steamcommunity.com/groups/fullwteam",gname:"FULL W TEAM | FWT",news:""};
+const LK={dOnline:"128",dMembers:"412",dVoice:"9",gMembers:"—",db:"",fkey:"",discord:"https://discord.gg/NgYBeKcKzn",steam:"https://steamcommunity.com/groups/fullwteam",gname:"FULL W TEAM | FWT",news:""};
 const copy=async t=>{try{await navigator.clipboard.writeText(t);return true}catch(e){return false}};
 
 function Login({accts,onLogin}){
@@ -93,35 +98,36 @@ function Login({accts,onLogin}){
 }
 
 function Settings({user,acc,onSave,onClose}){
- const [d,setD]=useState(acc.disp);const [em,setEm]=useState(acc.email);const [ph,setPh]=useState(acc.phone);
+ const [d,setD]=useState(acc.disp);const [bio,setBio]=useState(acc.bio||"");const [fc,setFc]=useState(acc.faceit||"");const [av,setAv]=useState(acc.avatar||"");
+ const [em,setEm]=useState(acc.email||"");const [ph,setPh]=useState(acc.phone||"");
  const [c,setC]=useState("");const [n,setN]=useState("");const [r,setR]=useState("");const [msg,setMsg]=useState(null);
  const save=()=>{
-  const patch={disp:d.trim()||acc.disp,email:em.trim(),phone:ph.trim()};
+  const patch={disp:d.trim()||acc.disp,bio:bio.trim(),faceit:fc.trim(),avatar:av,email:em.trim(),phone:ph.trim()};
   if(c||n||r){
    if(c!==acc.pass)return setMsg({e:1,t:"A password atual está incorreta."});
    if(n.length<6)return setMsg({e:1,t:"A nova password precisa de pelo menos 6 caracteres."});
    if(n!==r)return setMsg({e:1,t:"A confirmação não coincide com a nova password."});
    patch.pass=n;setC("");setN("");setR("");
   }
-  onSave(patch);setMsg({t:"Definições guardadas."});
+  onSave(patch);setMsg({t:"Perfil guardado."});
  };
  const F=(l,v,s,o={})=>html`<label class="block"><span class="text-xs font-semibold px-1" style=${{color:M}}>${l}</span><input class="inp mt-1" value=${v} onInput=${e=>{s(e.target.value);setMsg(null)}} ...${o}/></label>`;
  return html`<div class="fixed inset-0 z-50 flex items-center justify-center p-4" style=${{background:"rgba(0,0,0,.55)",backdropFilter:"blur(8px)"}} onClick=${onClose}>
-  <div class="glass fade w-full max-w-md p-6 overflow-y-auto" style=${{maxHeight:"92vh"}} onClick=${e=>e.stopPropagation()}>
-   <div class="flex items-center justify-between mb-4"><h3 class="text-xl font-extrabold">Definições de Conta</h3><button class="ghost tap" onClick=${onClose}><${I} n="x" s=${16}/></button></div>
-   <p class="text-xs mb-4" style=${{color:M}}>Utilizador de login: <b style=${{color:"var(--g)"}}>${user}</b> (não pode ser alterado)</p>
+  <div class="glass fade w-full max-w-md p-6 overflow-y-auto" style=${{maxHeight:"92dvh"}} onClick=${e=>e.stopPropagation()}>
+   <div class="flex items-center justify-between mb-4"><h3 class="text-xl font-extrabold">Editar perfil</h3><button class="ghost tap" onClick=${onClose}><${I} n="x" s=${16}/></button></div>
+   <p class="text-xs mb-4" style=${{color:M}}>Utilizador de login: <b style=${{color:"var(--g)"}}>${user}</b> (só o admin o pode alterar)</p>
    <div class="space-y-3">
+    <div class="flex items-center gap-4"><${Av} a=${{avatar:av,disp:d}} s=${72}/><div class="flex gap-2 flex-wrap"><label class="ghost tap cursor-pointer">Mudar imagem<input type="file" accept="image/*" class="hidden" onChange=${e=>{imgPick(e.target.files[0],x=>{setAv(x);setMsg(null)})}}/></label>${av&&html`<button class="ghost tap" onClick=${()=>setAv("")}>Remover</button>`}</div></div>
     ${F("Nome de Exibição",d,setD)}
+    <label class="block"><span class="text-xs font-semibold px-1" style=${{color:M}}>Bio (máx. 160 caracteres)</span><textarea class="inp mt-1" rows="3" maxlength="160" value=${bio} onInput=${e=>{setBio(e.target.value);setMsg(null)}}></textarea></label>
+    ${F("Nick da FACEIT",fc,setFc,{placeholder:"o teu nick na FACEIT"})}
     ${F("E-mail de Recuperação",em,setEm,{type:"email",placeholder:"nome@exemplo.com"})}
     ${F("Número de Telefone",ph,setPh,{type:"tel",placeholder:"+351 9XX XXX XXX"})}
     <div class="pt-2 text-sm font-bold">Alterar Password</div>
-    ${F("Password Atual",c,setC,{type:"password"})}
-    ${F("Nova Password",n,setN,{type:"password"})}
-    ${F("Confirmar Nova Password",r,setR,{type:"password"})}
+    ${F("Password Atual",c,setC,{type:"password"})}${F("Nova Password",n,setN,{type:"password"})}${F("Confirmar Nova Password",r,setR,{type:"password"})}
     ${msg&&html`<p class=${"text-sm px-1 "+(msg.e?"text-red-400":"")} style=${msg.e?{}:{color:"var(--g)"}}>${msg.t}</p>`}
     <button class="btn tap w-full" onClick=${save}><${I} n="check" s=${16}/> Guardar alterações</button></div></div></div>`;
 }
-
 function Training({m,onClose}){
  const [pr,setPr]=useState(0);
  useEffect(()=>{const t=setInterval(()=>setPr(v=>Math.min(100,v+4)),90);return()=>clearInterval(t)},[]);
@@ -144,7 +150,7 @@ function Hub({disp,maps}){
    <p class="mt-3 max-w-xl" style=${{color:M}}>${SITE.sub}</p></section>
   ${LK.news&&html`<section class="glass p-4 flex items-center gap-3 fade" style=${{borderRadius:22}}><span style=${{color:"var(--g)"}}><${I} n="msg" s=${18}/></span><span class="text-sm">${LK.news}</span></section>`}<section><h2 class="font-bold text-xl mb-4">Hub de Treino</h2>
   ${act.length===0?html`<div class="glass p-8 text-center" style=${{color:M}}>Ainda não há mapas ativos. O admin pode ativá-los no Painel de Configuração.</div>`:
-  html`<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">${act.map(m=>html`<div key=${m.id} class="glass lift p-6 flex flex-col fade">
+  html`<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">${act.map(m=>html`<div key=${m.id} class="glass lift p-6 flex flex-col fade">
    <div class="wcut" style=${{position:"absolute",right:14,top:14,width:30,height:25,background:tagc(m.tipo),opacity:.5}}></div>
    <span class="self-start text-xs font-bold px-3 py-1 rounded-full" style=${{color:tagc(m.tipo),background:tagc(m.tipo)+"22",border:"1px solid "+tagc(m.tipo)+"55"}}>${m.tipo}</span>
    <h3 class="text-2xl font-extrabold mt-3">${m.nome}</h3><p class="text-sm mt-2 flex-1" style=${{color:M}}>${m.desc}</p>
@@ -171,7 +177,7 @@ function Optimize(){
  const L=a=>html`<ol class="list-decimal pl-5 space-y-1" style=${{color:M}}>${a.map((x,i)=>html`<li key=${i}>${x}</li>`)}</ol>`;
  return html`<div class="space-y-5 fade">
   <div><h2 class="font-bold text-xl">Otimização do CS2</h2><p class="text-sm mt-1" style=${{color:M}}>Mais fluidez sem tocar nas texturas nem nos gráficos do jogo. As barras são uma simulação: o browser não limpa nada no teu PC, por isso segue os passos indicados em cada ferramenta.</p></div>
-  <div class="grid gap-4 md:grid-cols-2">
+  <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
    <${Tool} icon="db" title="Limpar Cache de Shaders DirectX/Vulkan" desc="Remove engasgos e stutters causados por shaders corrompidos ou desatualizados." label="Limpar cache">
     ${L(["Steam → Definições → Shader Pre-Caching: apaga o cache do CS2 (ou da Steam).","Windows: apaga o conteúdo de %LocalAppData%\\NVIDIA\\DXCache (NVIDIA) ou usa a Limpeza de Disco → Cache de Shaders DirectX.","Reabre o CS2: os shaders são recompilados no primeiro arranque."])}<//>
    <${Tool} icon="cpu" title="Otimizar Agendamento do CPU (High Priority)" desc="Gera as opções de arranque para o CS2 correr com prioridade máxima." label="Gerar comandos">
@@ -186,20 +192,72 @@ function Optimize(){
   </div></div>`;
 }
 
+const Av=({a,s=40})=>a&&a.avatar?html`<img src=${a.avatar} alt="" style=${{width:s,height:s,borderRadius:"30%",objectFit:"cover",flex:"none"}}/>`:html`<div style=${{width:s,height:s,borderRadius:"30%",flex:"none",background:"linear-gradient(135deg,#73E639,#1f6d0f)",color:"#0d1a04",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:s*.42}}>${((a&&a.disp)||"?").charAt(0).toUpperCase()}</div>`;
+const imgPick=(f,cb)=>{if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(im.width,im.height),c=document.createElement("canvas");c.width=c.height=128;c.getContext("2d").drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,128,128);cb(c.toDataURL("image/jpeg",.78))};im.src=r.result};r.readAsDataURL(f)};
+const FC=l=>l>=10?"#FE1F00":l>=8?"#FF6309":l>=4?"#FFC800":l>=2?"#1CE400":"#EEEEEE";
+function Faceit({nick}){
+ const [d,setD]=useState(null);const [s,setS]=useState("idle");
+ useEffect(()=>{
+  if(!nick)return;const ck="fwt-fc-"+nick;
+  try{const c=JSON.parse(sessionStorage.getItem(ck));if(c&&Date.now()-c.t<6e5){setD(c.d);setS("ok");return}}catch(e){}
+  if(!LK.fkey){setS("nokey");return}
+  setS("run");
+  (async()=>{try{
+   const H={Authorization:"Bearer "+LK.fkey};
+   const r=await fetch("https://open.faceit.com/data/v4/players?nickname="+encodeURIComponent(nick),{headers:H});if(!r.ok)throw 0;
+   const p=await r.json();const gm=p.games&&p.games.cs2?"cs2":"csgo";const g=(p.games&&p.games[gm])||{};let st=null;
+   try{const q=await fetch("https://open.faceit.com/data/v4/players/"+p.player_id+"/stats/"+gm,{headers:H});if(q.ok)st=(await q.json()).lifetime}catch(e){}
+   const o={lvl:g.skill_level,elo:g.faceit_elo,kd:st&&st["Average K/D Ratio"],wr:st&&st["Win Rate %"],m:st&&st["Matches"],url:(p.faceit_url||"").replace("{lang}","pt")};
+   try{sessionStorage.setItem(ck,JSON.stringify({t:Date.now(),d:o}))}catch(e){}setD(o);setS("ok")
+  }catch(e){setS("err")}})();
+ },[nick]);
+ if(!nick)return null;
+ const link=(d&&d.url)||"https://www.faceit.com/pt/players/"+encodeURIComponent(nick);
+ return html`<a href=${link} target="_blank" rel="noopener noreferrer" class="glass block mt-4 p-3 text-left" style=${{borderRadius:20,textDecoration:"none",color:"inherit"}}>
+  <div class="flex items-center gap-3"><div style=${{width:40,height:40,borderRadius:99,border:"3px solid "+(d&&d.lvl?FC(d.lvl):"#555"),display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,flex:"none"}}>${d&&d.lvl?d.lvl:"–"}</div>
+  <div class="text-sm"><b>FACEIT · ${nick}</b><div class="text-xs" style=${{color:M}}>${s==="run"?"A carregar…":d?"LVL "+d.lvl+" · "+d.elo+" ELO":s==="nokey"?"Stats indisponíveis (falta a chave da API)":"Não foi possível obter as stats"}</div></div></div>
+  ${d&&(d.kd||d.wr)&&html`<div class="grid grid-cols-3 gap-2 mt-3 text-center text-xs">${[["K/D",d.kd],["Win %",d.wr],["Jogos",d.m]].map(([k,v])=>html`<div key=${k}><b class="text-sm">${v||"–"}</b><div style=${{color:M}}>${k}</div></div>`)}</div>`}</a>`;
+}
 function Roster({accts}){
- const gr=["#73E639,#1f6d0f","#38BDF8,#1d4ed8","#F5A524,#b45309","#A78BFA,#6d28d9","#f472b6,#be185d"];
  return html`<div class="space-y-5 fade"><h2 class="font-bold text-xl">Roster</h2>
-  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">${ROSTER.map((k,i)=>{const a=accts[k];return html`<div key=${k} class="glass lift p-6 text-center overflow-hidden">
+  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">${ROSTER.map(k=>{const a=accts[k];if(!a)return null;return html`<div key=${k} class="glass lift p-6 text-center overflow-hidden">
    <div class="wcut" style=${{position:"absolute",right:14,top:14,width:28,height:24,background:"var(--g)",opacity:.4}}></div>
-   <div class="mx-auto flex items-center justify-center text-4xl font-black" style=${{width:96,height:96,borderRadius:32,background:"linear-gradient(135deg,"+gr[i]+")",boxShadow:"inset 0 2px 0 rgba(255,255,255,.5),0 14px 30px -10px rgba(0,0,0,.7)"}}>${a.disp.charAt(0).toUpperCase()}</div>
+   <div class="flex justify-center"><${Av} a=${a} s=${96}/></div>
    <h3 class="text-xl font-extrabold mt-4">${a.disp}</h3>
    <p class="text-xs mt-1" style=${{color:M}}>@${k} · ${a.admin?"Admin":"Jogador"}</p>
-   <p class="text-xs mt-3 truncate" style=${{color:M}}>${a.steam.replace("https://","")}</p>
+   ${a.bio&&html`<p class="text-sm mt-3" style=${{color:M}}>${a.bio}</p>`}
+   <${Faceit} nick=${a.faceit}/>
    <a class="btn tap mt-4 w-full" href=${a.steam} target="_blank" rel="noopener noreferrer"><${I} n="ext" s=${16}/> Abrir Steam</a></div>`})}</div></div>`;
 }
-
+function Chat({user,accts,open,setOpen}){
+ const [ms,setMs]=useState([]);const [tx,setTx]=useState("");const [er,setEr]=useState("");const [more,setMore]=useState(true);const box=useRef(null);const stick=useRef(true);
+ const base=LK.db?LK.db.replace(/\/+$/,"")+"/chat":"";
+ const q=x=>base+".json?orderBy=%22%24key%22&"+x;
+ const put=j=>setMs(o=>{const m={};o.forEach(x=>m[x.id]=x);Object.keys(j||{}).forEach(k=>m[k]={id:k,...j[k]});return Object.values(m).sort((a,b)=>a.id<b.id?-1:1)});
+ const poll=async()=>{try{const r=await fetch(q("limitToLast=100"),{cache:"no-store"});if(r.ok){put(await r.json());setEr("")}else setEr("Chat indisponível ("+r.status+").")}catch(e){setEr("Sem ligação ao chat.")}};
+ useEffect(()=>{if(!base)return;poll();const i=setInterval(()=>{if(!document.hidden)poll()},4000);return()=>clearInterval(i)},[base]);
+ useEffect(()=>{const b=box.current;if(b&&stick.current)b.scrollTop=b.scrollHeight},[ms,open]);
+ const older=async()=>{if(!ms.length)return;stick.current=false;try{const r=await fetch(q("endAt=%22"+ms[0].id+"%22&limitToLast=51"),{cache:"no-store"});const j=await r.json();if(Object.keys(j||{}).length<=1)setMore(false);put(j)}catch(e){}};
+ const send=async()=>{const t=tx.trim();if(!t||!base)return;setTx("");stick.current=true;
+  try{const r=await fetch(base+".json",{method:"POST",body:JSON.stringify({u:user,n:(accts[user]||{}).disp||user,t:t.slice(0,500),ts:{".sv":"timestamp"}})});if(!r.ok)throw 0;poll()}catch(e){setTx(t);setEr("Não foi possível enviar.")}};
+ return html`<${React.Fragment}>
+  ${!open&&html`<button class="btn tap fab" aria-label="Abrir chat" onClick=${()=>setOpen(true)}><${I} n="msg" s=${24}/></button>`}
+  <aside class=${"glass chat "+(open?"open":"")}>
+   <div class="flex items-center justify-between px-4 py-3" style=${{borderBottom:"1px solid rgba(255,255,255,.1)"}}><b>Chat da equipa</b><button class="ghost tap lg:hidden" aria-label="Fechar chat" onClick=${()=>setOpen(false)}><${I} n="x" s=${16}/></button></div>
+   ${!base?html`<p class="p-5 text-sm" style=${{color:M}}>O chat ainda não está configurado. O admin tem de ligar a base de dados no painel (Ligações e Anúncio).</p>`:html`
+   <div class="msgs px-3 py-3 space-y-3" ref=${box} onScroll=${e=>{const b=e.target;stick.current=b.scrollHeight-b.scrollTop-b.clientHeight<60}}>
+    ${more&&ms.length>=100&&html`<button class="ghost tap w-full justify-center" onClick=${older}>Carregar mensagens anteriores</button>`}
+    ${ms.length===0&&html`<p class="text-sm text-center" style=${{color:M}}>Ainda não há mensagens. Escreve a primeira!</p>`}
+    ${ms.map(m=>{const me=m.u===user,a=accts[m.u]||{disp:m.n};return html`<div key=${m.id} class=${"flex gap-2 "+(me?"flex-row-reverse":"")}><${Av} a=${a} s=${30}/>
+     <div style=${{maxWidth:"78%",padding:".5rem .75rem",borderRadius:18,background:me?"rgba(115,230,57,.2)":"rgba(255,255,255,.08)"}}>
+      <div class="text-xs" style=${{color:me?"var(--g)":M}}><b>${a.disp||m.n}</b> · ${m.ts?new Date(m.ts).toLocaleString("pt-PT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):""}</div>
+      <div class="text-sm whitespace-pre-wrap">${m.t}</div></div></div>`})}</div>
+   ${er&&html`<p class="px-4 text-xs text-red-400">${er}</p>`}
+   <div class="flex gap-2 p-3"><input class="inp" placeholder="Escreve uma mensagem…" maxlength="500" value=${tx} onInput=${e=>setTx(e.target.value)} onKeyDown=${e=>e.key==="Enter"&&send()}/><button class="btn tap" style=${{padding:"0 .9rem"}} aria-label="Enviar" onClick=${send}><${I} n="send" s=${18}/></button></div>`}
+  </aside><//>`;
+}
 function Discord(){
- const st=[["Online","128"],["Membros","412"],["Canais de voz","9"]];
+ const st=[["Online",LK.dOnline],["Membros",LK.dMembers],["Canais de voz",LK.dVoice]];
  return html`<div class="fade space-y-5"><div class="glass p-8 sm:p-12 overflow-hidden" style=${{background:"linear-gradient(135deg,rgba(88,101,242,.4),rgba(115,230,57,.12))"}}>
   <div class="wcut" style=${{position:"absolute",right:-10,top:-10,width:150,height:127,background:"rgba(115,230,57,.14)"}}></div>
   <div class="flex items-center gap-2 text-sm font-semibold"><span style=${{width:10,height:10,borderRadius:99,background:"var(--g)",boxShadow:"0 0 10px #73E639"}}></span> Servidor Online</div>
@@ -207,14 +265,14 @@ function Discord(){
   <p class="mt-3 max-w-lg" style=${{color:"#d4d8ff"}}>Scrims, lineups, tácticas e boa disposição. Junta-te à malta da FULL W TEAM.</p>
   <div class="grid grid-cols-3 gap-3 mt-7 max-w-lg">${st.map(([a,b])=>html`<div key=${a} class="glass p-4 text-center" style=${{borderRadius:20}}><div class="text-2xl font-extrabold">${b}</div><div class="text-xs" style=${{color:M}}>${a}</div></div>`)}</div>
   <a class="btn tap mt-8 text-lg" style=${{background:"linear-gradient(135deg,#5865F2,#73E639)",color:"#fff",padding:"1rem 1.6rem",borderRadius:22}} href=${LK.discord} target="_blank" rel="noopener noreferrer"><${I} n="msg" s=${22}/> Juntar-se ao Discord</a>
-  <p class="text-xs mt-4" style=${{color:M}}>Estatísticas do servidor fictícias, apenas ilustrativas.</p></div></div>`;
+  <p class="text-xs mt-4" style=${{color:M}}>Estatísticas definidas pelo admin.</p></div></div>`;
 }
 
 function SteamGroup(){
  return html`<div class="fade"><div class="glass p-8 sm:p-12 overflow-hidden" style=${{background:"linear-gradient(135deg,rgba(27,40,56,.8),rgba(115,230,57,.1))"}}>
   <div class="flex items-center gap-5 flex-wrap"><div class="glass flex items-center justify-center" style=${{width:92,height:92,borderRadius:28}}><${Logo} s=${54}/></div>
    <div><p class="text-xs font-semibold tracking-widest" style=${{color:"var(--g)"}}>GRUPO · COMUNIDADE STEAM</p><h2 class="text-3xl sm:text-4xl font-black mt-1">${LK.gname}</h2><p class="text-sm mt-1" style=${{color:M}}>Fundada em Portugal 🇵🇹 · Equipa de Counter-Strike 2</p></div></div>
-  <div class="grid grid-cols-3 gap-3 mt-7 max-w-lg">${[["Membros","—"],["Jogo","CS2"],["País","PT"]].map(([a,b])=>html`<div key=${a} class="glass p-4 text-center" style=${{borderRadius:20}}><div class="text-2xl font-extrabold">${b}</div><div class="text-xs" style=${{color:M}}>${a}</div></div>`)}</div>
+  <div class="grid grid-cols-3 gap-3 mt-7 max-w-lg">${[["Membros",LK.gMembers],["Jogo","CS2"],["País","PT"]].map(([a,b])=>html`<div key=${a} class="glass p-4 text-center" style=${{borderRadius:20}}><div class="text-2xl font-extrabold">${b}</div><div class="text-xs" style=${{color:M}}>${a}</div></div>`)}</div>
   <a class="btn tap mt-8 text-lg" style=${{padding:"1rem 1.6rem",borderRadius:22}} href=${LK.steam} target="_blank" rel="noopener noreferrer"><${I} n="users" s=${22}/> Entrar no Grupo da Steam</a></div></div>`;
 }
 
@@ -260,22 +318,33 @@ const Page=({m})=>html`<div class="glass fade p-6 sm:p-8 space-y-4"><h2 class="t
 function App(){
  const [accts,setAccts]=useState(ACC0);const [user,setUser]=useState(()=>{try{const s=JSON.parse(localStorage.getItem("fwt-login"));if(s&&ACC0[s.u]&&hs(ACC0[s.u].pass)===s.h)return s.u}catch(e){}return null});const [tab,setTab]=useState("hub");
  const [maps,setMaps]=useState(SEED);const [set,setSet]=useState(false);const pwa=usePWA();const [dis,setDis]=useState(false);const toast=pwa.upd&&!dis?html`<${Toast} onClose=${()=>setDis(true)}/>`:null;
+ const [fb,setFb]=useState({});const [menu,setMenu]=useState(false);const [chat,setChat]=useState(false);
+ const eff=Object.fromEntries(Object.entries(accts).map(([k,x])=>{const f=fb[k];return [k,f&&(f.ts||0)>(x.pu||0)?{...x,...["disp","bio","avatar","faceit"].reduce((o,z)=>{if(f[z]!==undefined)o[z]=f[z];return o},{})}:x]}));
+ useEffect(()=>{if(!user)return;
+  if(!LK.db){try{const l=JSON.parse(localStorage.getItem("fwt-prof-"+user));if(l)setFb(f=>({...f,[user]:l}))}catch(e){}return}
+  let on=true;const f=async()=>{try{const r=await fetch(LK.db.replace(/\/+$/,"")+"/profiles.json",{cache:"no-store"});if(r.ok){const j=await r.json();if(on&&j)setFb(j)}}catch(e){}};f();const i=setInterval(f,60000);return()=>{on=false;clearInterval(i)}},[user]);
+ useEffect(()=>{if(!menu)return;const h=e=>{if(!e.target.closest(".pm"))setMenu(false)};document.addEventListener("click",h);return()=>document.removeEventListener("click",h)},[menu]);
+ const saveProfile=async(u,p)=>{const o={disp:p.disp,bio:p.bio||"",faceit:p.faceit||"",avatar:p.avatar||""};setFb(f=>({...f,[u]:{...o,ts:Date.now()}}));
+  if(LK.db){try{await fetch(LK.db.replace(/\/+$/,"")+"/profiles/"+u+".json",{method:"PUT",body:JSON.stringify({...o,ts:{".sv":"timestamp"}})})}catch(e){}}
+  else{try{localStorage.setItem("fwt-prof-"+u,JSON.stringify({...o,ts:Date.now()}))}catch(e){}}};
  if(!user)return html`<${Login} accts=${accts} onLogin=${k=>{setUser(k);setTab("hub")}}/>${toast}`;
- const a=accts[user];
+ const a=eff[user]||accts[user];
  const items=MENU.filter(m=>m.on);
  const tabs=[...items.map(m=>[m.id,m.icon,m.label,m]),...(a.admin?[["config","sl","Configuração",null]]:[])];
  const cur=tabs.some(x=>x[0]===tab)?tab:(tabs[0]?tabs[0][0]:"hub");const cm=items.find(m=>m.id===cur);
  const body=cur==="config"?(a.admin?html`<${Config} maps=${maps} setMaps=${setMaps}/>`:html`<${Denied}/>`):
-  cm&&cm.kind==="page"?html`<${Page} m=${cm}/>`:cur==="opt"?html`<${Optimize}/>`:cur==="roster"?html`<${Roster} accts=${accts}/>`:cur==="discord"?html`<${Discord}/>`:cur==="steam"?html`<${SteamGroup}/>`:html`<${Hub} disp=${a.disp} maps=${maps}/>`;
- return html`<div class="max-w-6xl mx-auto p-4 sm:p-6 space-y-4">
-  <header class="glass flex items-center gap-3 px-4 py-3" style=${{borderRadius:26}}>
+  cm&&cm.kind==="page"?html`<${Page} m=${cm}/>`:cur==="opt"?html`<${Optimize}/>`:cur==="roster"?html`<${Roster} accts=${eff}/>`:cur==="discord"?html`<${Discord}/>`:cur==="steam"?html`<${SteamGroup}/>`:html`<${Hub} disp=${a.disp} maps=${maps}/>`;
+ return html`<div class="mx-auto p-4 sm:p-6 lg:flex lg:gap-6 lg:items-start" style=${{maxWidth:1760}}><${Chat} user=${user} accts=${eff} open=${chat} setOpen=${setChat}/><div class="flex-1 min-w-0 w-full mx-auto space-y-4" style=${{maxWidth:1152}}>
+  <header class="glass flex items-center gap-3 px-4 py-3" style=${{borderRadius:26,zIndex:30}}>
    <${Logo} s=${34}/><b class="tracking-tight">${SITE.name}</b>
-   <span class="text-xs hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full ml-auto" style=${{background:"rgba(255,255,255,.08)"}}><${I} n=${a.admin?"shield":"user"} s=${14}/>${a.disp}${a.admin?" · Admin":""}</span>
-   <button class="ghost tap ml-auto sm:ml-0" aria-label="Definições de Conta" onClick=${()=>setSet(true)}><${I} n="gear" s=${17}/><span class="hidden sm:inline">Definições</span></button>
-   <button class="ghost tap" onClick=${()=>{try{localStorage.removeItem("fwt-login")}catch(e){}setUser(null)}}><${I} n="out" s=${16}/> <span class="hidden sm:inline">Terminar Sessão</span></button></header>
+   <div class="ml-auto relative pm"><button class="ghost tap" style=${{padding:".3rem .8rem .3rem .3rem",borderRadius:99}} onClick=${()=>setMenu(!menu)}><${Av} a=${a} s=${32}/><span class="text-sm font-semibold">${a.disp}</span><${I} n="chev" s=${14}/></button>
+   ${menu&&html`<div class="glass fade p-2 w-56" style=${{position:"absolute",right:0,marginTop:8,borderRadius:20}}>
+    <div class="px-3 py-2 text-xs" style=${{color:M}}>@${user}${a.admin?" · Admin":""}</div>
+    <button class="ghost tap w-full" style=${{justifyContent:"flex-start"}} onClick=${()=>{setMenu(false);setSet(true)}}><${I} n="user" s=${16}/> Editar perfil</button>
+    <button class="ghost tap w-full mt-1" style=${{justifyContent:"flex-start",color:"#f87171"}} onClick=${()=>{try{localStorage.removeItem("fwt-login")}catch(e){}setMenu(false);setUser(null)}}><${I} n="out" s=${16}/> Terminar sessão</button></div>`}</div></header>
   <nav class="glass nav flex gap-1 p-1.5" style=${{borderRadius:22}}>${tabs.map(([id,ic,l,m])=>html`<button key=${id} onClick=${()=>{if(m&&m.kind==="link"&&m.url)window.open(m.url,"_blank","noopener");else setTab(id)}} class="tap flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-semibold whitespace-nowrap" style=${{background:cur===id?"var(--g)":"transparent",color:cur===id?"#0d1a04":"var(--tx)"}}><${I} n=${P[ic]?ic:"link"} s=${16}/>${l}</button>`)}</nav>
   ${body}${SITE.footer&&html`<p class="text-center text-xs pt-2" style=${{color:M}}>${SITE.footer}</p>`}
-  ${toast}${set&&html`<${Settings} user=${user} acc=${a} onClose=${()=>setSet(false)} onSave=${p=>setAccts({...accts,[user]:{...a,...p}})}/>`}</div>`;
+  ${toast}${set&&html`<${Settings} user=${user} acc=${a} onClose=${()=>setSet(false)} onSave=${p=>{setAccts({...accts,[user]:{...a,...p}});saveProfile(user,p)}}/>`}</div></div>`;
 }
 function applyCfg(c){try{
  if(c.maps){SEED.length=0;SEED.push(...c.maps)}

@@ -1,137 +1,161 @@
 {
-  "maps": [
-    {
-      "id": 1,
-      "nome": "Mirage",
-      "tipo": "Granadas",
-      "link": "https://steamcommunity.com/workshop/browse/?appid=730",
-      "desc": "Smokes, molotovs e flashes para execuções A e B. Lineups marcados no chão.",
-      "on": true
-    },
-    {
-      "id": 2,
-      "nome": "Aim_Botz",
-      "tipo": "Aim/Mira",
-      "link": "https://steamcommunity.com/workshop/browse/?appid=730",
-      "desc": "Bots configuráveis para treino de spray control e flicks a diferentes distâncias.",
-      "on": true
-    },
-    {
-      "id": 3,
-      "nome": "Inferno",
-      "tipo": "Retake",
-      "link": "https://steamcommunity.com/workshop/browse/?appid=730",
-      "desc": "Cenários de retake 3v4 nos bombsites A e B com utilitário limitado.",
-      "on": true
-    },
-    {
-      "id": 4,
-      "nome": "Dust2",
-      "tipo": "Posicionamento",
-      "link": "https://steamcommunity.com/workshop/browse/?appid=730",
-      "desc": "Ângulos, off-angles e posições de hold para CT e T.",
-      "on": false
-    }
-  ],
-  "accounts": {
-    "konkelfwt": {
-      "pass": "kiko9987",
-      "admin": true,
-      "disp": "Konkel",
-      "steam": "https://steamcommunity.com/id/konkelfwt/",
-      "email": "",
-      "phone": ""
-    },
-    "fksuprisefwt": {
-      "pass": "fergod991",
-      "disp": "FK' Suprise",
-      "steam": "https://steamcommunity.com/profiles/76561198812053389",
-      "email": "",
-      "phone": ""
-    },
-    "leodobigodefwt": {
-      "pass": "bigode123",
-      "disp": "Leo do Bigode",
-      "steam": "https://steamcommunity.com/profiles/76561199871391790",
-      "email": "",
-      "phone": ""
-    },
-    "oliveirexfwt": {
-      "pass": "oliveirafwt",
-      "disp": "Oliveirex",
-      "steam": "https://steamcommunity.com/id/goncasxxs",
-      "email": "",
-      "phone": ""
-    },
-    "oleofwt": {
-      "pass": "manuoleofwt",
-      "disp": "Oleo",
-      "steam": "https://steamcommunity.com/profiles/76561199682614793",
-      "email": "",
-      "phone": ""
-    },
-    "pixkitofwt": {
-      "pass": "pixkofwt",
-      "disp": "Pixkito",
-      "steam": "https://steamcommunity.com/id/pixkito",
-      "email": "",
-      "phone": ""
-    }
+ "maps": [
+  {
+   "id": 1,
+   "nome": "Mirage",
+   "tipo": "Granadas",
+   "link": "https://steamcommunity.com/workshop/browse/?appid=730",
+   "desc": "Smokes, molotovs e flashes para execuções A e B. Lineups marcados no chão.",
+   "on": true
   },
-  "roster": [
-    "konkelfwt",
-    "fksuprisefwt",
-    "leodobigodefwt",
-    "oleofwt",
-    "pixkitofwt"
-  ],
-  "links": {
-    "discord": "https://discord.gg/NgYBeKcKzn",
-    "steam": "https://steamcommunity.com/groups/fullwteam",
-    "gname": "FULL W TEAM | FWT"
+  {
+   "id": 2,
+   "nome": "Aim_Botz",
+   "tipo": "Aim/Mira",
+   "link": "https://steamcommunity.com/workshop/browse/?appid=730",
+   "desc": "Bots configuráveis para treino de spray control e flicks a diferentes distâncias.",
+   "on": true
   },
-  "news": "",
-  "site": {
-    "name": "FULL W TEAM",
-    "sub": "Escolhe uma rotina e treina com a equipa.",
-    "login": "Inicia sessão para continuar",
-    "footer": ""
+  {
+   "id": 3,
+   "nome": "Inferno",
+   "tipo": "Retake",
+   "link": "https://steamcommunity.com/workshop/browse/?appid=730",
+   "desc": "Cenários de retake 3v4 nos bombsites A e B com utilitário limitado.",
+   "on": true
   },
-  "menu": [
-    {
-      "id": "hub",
-      "label": "Hub de Treino",
-      "icon": "map",
-      "on": true,
-      "kind": "builtin"
-    },
-    {
-      "id": "opt",
-      "label": "Otimização CS2",
-      "icon": "zap",
-      "on": true,
-      "kind": "builtin"
-    },
-    {
-      "id": "roster",
-      "label": "Roster",
-      "icon": "users",
-      "on": true,
-      "kind": "builtin"
-    },
-    {
-      "id": "discord",
-      "label": "Discord",
-      "icon": "msg",
-      "on": true,
-      "kind": "builtin"
-    },
-    {
-      "id": "steam",
-      "label": "Steam Group",
-      "icon": "shield",
-      "on": true,
-      "kind": "builtin"
-    }
-  ]
+  {
+   "id": 4,
+   "nome": "Dust2",
+   "tipo": "Posicionamento",
+   "link": "https://steamcommunity.com/workshop/browse/?appid=730",
+   "desc": "Ângulos, off-angles e posições de hold para CT e T.",
+   "on": false
+  }
+ ],
+ "accounts": {
+  "konkelfwt": {
+   "pass": "konkelFWT2026",
+   "admin": true,
+   "disp": "Konkel",
+   "steam": "https://steamcommunity.com/id/konkelfwt/",
+   "email": "",
+   "phone": "",
+   "avatar": "",
+   "bio": "",
+   "faceit": ""
+  },
+  "fergod99fwt": {
+   "pass": "fergod991",
+   "disp": "FerGod",
+   "steam": "https://steamcommunity.com/profiles/76561199682614793",
+   "email": "",
+   "phone": "",
+   "avatar": "",
+   "bio": "",
+   "faceit": ""
+  },
+  "leodobigodefwt": {
+   "pass": "bigode123",
+   "disp": "Leo do Bigode",
+   "steam": "https://steamcommunity.com",
+   "email": "",
+   "phone": "",
+   "avatar": "",
+   "bio": "",
+   "faceit": ""
+  },
+  "oliveirexfwt": {
+   "pass": "oliveirafwt",
+   "disp": "Oliveirex",
+   "steam": "https://steamcommunity.com",
+   "email": "",
+   "phone": "",
+   "avatar": "",
+   "bio": "",
+   "faceit": ""
+  },
+  "oleofwt": {
+   "pass": "manuoleofwt",
+   "disp": "Oleo",
+   "steam": "https://steamcommunity.com/profiles/76561199871391790",
+   "email": "",
+   "phone": "",
+   "avatar": "",
+   "bio": "",
+   "faceit": ""
+  },
+  "pixkitofwt": {
+   "pass": "pixkofwt",
+   "disp": "Pixkito",
+   "steam": "https://steamcommunity.com/id/pixkito",
+   "email": "",
+   "phone": "",
+   "avatar": "",
+   "bio": "",
+   "faceit": ""
+  }
+ },
+ "roster": [
+  "konkelfwt",
+  "fergod99fwt",
+  "leodobigodefwt",
+  "oleofwt",
+  "pixkitofwt"
+ ],
+ "links": {
+  "discord": "https://discord.gg/NgYBeKcKzn",
+  "steam": "https://steamcommunity.com/groups/fullwteam",
+  "gname": "FULL W TEAM | FWT",
+  "dOnline": "128",
+  "dMembers": "412",
+  "dVoice": "9",
+  "gMembers": "—",
+  "db": "",
+  "fkey": ""
+ },
+ "news": "",
+ "site": {
+  "name": "FULL W TEAM",
+  "sub": "Escolhe uma rotina e treina com a equipa.",
+  "login": "Inicia sessão para continuar",
+  "footer": ""
+ },
+ "menu": [
+  {
+   "id": "hub",
+   "label": "Hub de Treino",
+   "icon": "map",
+   "on": true,
+   "kind": "builtin"
+  },
+  {
+   "id": "opt",
+   "label": "Otimização CS2",
+   "icon": "zap",
+   "on": true,
+   "kind": "builtin"
+  },
+  {
+   "id": "roster",
+   "label": "Roster",
+   "icon": "users",
+   "on": true,
+   "kind": "builtin"
+  },
+  {
+   "id": "discord",
+   "label": "Discord",
+   "icon": "msg",
+   "on": true,
+   "kind": "builtin"
+  },
+  {
+   "id": "steam",
+   "label": "Steam Group",
+   "icon": "shield",
+   "on": true,
+   "kind": "builtin"
+  }
+ ]
 }
