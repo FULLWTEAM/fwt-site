@@ -87,10 +87,11 @@ const copy=async t=>{try{await navigator.clipboard.writeText(t);return true}catc
 
 const sha=async s=>[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)))].map(b=>b.toString(16).padStart(2,"0")).join("");
 const mailH=e=>sha("fwt-mail:"+e.trim().toLowerCase());
-const pwH=(u,p)=>sha("fwt-pw:"+u+":"+p);
+const pwH=(u,p)=>sha("fwt-pw:"+p);
+const logEv=(u,t,d)=>{if(LK.db)fetch(DB()+"/log.json",{method:"POST",body:JSON.stringify({u,t,d:d||"",ts:{".sv":"timestamp"}})}).catch(()=>{})};
 const getOv=async u=>{if(!LK.db)return null;try{const r=await fetch(DB()+"/pw/"+encodeURIComponent(u)+".json",{cache:"no-store"});return r.ok?await r.json():null}catch(e){return null}};
-const verifyPw=async(u,p,a)=>{const ov=await getOv(u);if(ov&&ov.h&&(ov.ts||0)>(a.pwts||0))return{ok:(await pwH(u,p))===ov.h,o:1};return{ok:a.pass===p,o:0}};
-const setPw=async(u,p)=>{if(!LK.db)return false;try{const r=await fetch(DB()+"/pw/"+encodeURIComponent(u)+".json",{method:"PUT",body:JSON.stringify({h:await pwH(u,p),ts:{".sv":"timestamp"}})});return r.ok}catch(e){return false}};
+const verifyPw=async(u,p,a)=>{const ov=await getOv(u);const h=await pwH(u,p);if(ov&&ov.h&&(ov.ts||0)>(a.pwts||0))return{ok:h===ov.h,o:1};if(a.ph)return{ok:h===a.ph,o:1};return{ok:a.pass===p,o:0}};
+const setPw=async(u,p)=>{if(!LK.db)return false;try{const r=await fetch(DB()+"/pw/"+encodeURIComponent(u)+".json",{method:"PUT",body:JSON.stringify({h:await pwH(u,p),ts:{".sv":"timestamp"}})});if(r.ok)logEv(u,"password","alterou a password");return r.ok}catch(e){return false}};
 function Recover({accts,onClose,onDone}){
  const [st,setSt]=useState("mail");const [em,setEm]=useState("");const [cd,setCd]=useState("");const [msg,setMsg]=useState("");const [busy,setBusy]=useState(false);
  const [np,setNp]=useState("");const [nc,setNc]=useState("");const [who,setWho]=useState("");const ref=useRef({});
@@ -100,11 +101,11 @@ function Recover({accts,onClose,onDone}){
   if(ref.current.last&&Date.now()-ref.current.last<60000){setMsg("Espera um minuto antes de pedir outro código.");return}
   setBusy(true);setMsg("");
   const eh=await mailH(em);const hits=Object.keys(accts).filter(k=>accts[k].eh===eh);
-  if(!hits.length){setBusy(false);setMsg("Não encontrei nenhuma conta com esse e-mail. Confirma o endereço ou fala com o admin.");return}
+  if(!hits.length){setBusy(false);setMsg("Não encontrei nenhuma conta com esse e-mail. O e-mail tem de estar registado no perfil (Editar perfil, depois de entrares) ou pelo admin no painel. Confirma o endereço ou fala com o admin.");return}
   const code=String(crypto.getRandomValues(new Uint32Array(1))[0]%1000000).padStart(6,"0");
   try{
    const r=await fetch("https://api.emailjs.com/api/v1.0/email/send",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({service_id:LK.ejsService,template_id:LK.ejsTemplate,user_id:LK.ejsKey,template_params:{to_email:em.trim(),code,username:hits.join(", "),site:SITE.name}})});
-   if(!r.ok)throw 0;
+   if(!r.ok){const tx=await r.text();setMsg("O EmailJS recusou o envio: "+String(tx).slice(0,160));setBusy(false);return}
    ref.current={h:await sha("fwt-code:"+code),exp:Date.now()+6e5,tries:0,names:hits,last:Date.now()};setCd("");setSt("code");setMsg("Enviámos um código de 6 dígitos para "+em.trim()+". Vale 10 minutos.");
   }catch(e){setMsg("Não foi possível enviar o e-mail. Tenta mais tarde ou fala com o admin.")}
   setBusy(false)};
@@ -123,7 +124,7 @@ function Recover({accts,onClose,onDone}){
  return html`<div class="fixed inset-0 z-[60] flex items-center justify-center p-4 overflow-y-auto" style=${{background:"rgba(0,0,0,.6)"}} onClick=${e=>{e.stopPropagation();onClose()}}>
   <div class="glass fade w-full max-w-sm p-6 space-y-3" onClick=${e=>e.stopPropagation()}>
    <div class="flex items-center justify-between"><h3 class="text-xl font-extrabold">Recuperar conta</h3><button class="ghost tap" onClick=${onClose}><${I} n="x" s=${16}/></button></div>
-   ${!cfg?html`<p class="text-sm" style=${T}>A recuperação por e-mail ainda não está configurada. Fala com o admin da equipa.</p>`:html`<div class="space-y-3">
+   ${!cfg?html`<p class="text-sm" style=${T}>A recuperação por e-mail ainda não está configurada (faltam dados do EmailJS no painel admin). Fala com o admin da equipa.</p>`:html`<div class="space-y-3">
     ${st==="mail"&&html`<p class="text-xs" style=${T}>Escreve o e-mail de recuperação da tua conta. Enviamos-te um código e o teu nome de utilizador.</p>
      <input class="inp" type="email" placeholder="o-teu@email.com" value=${em} onInput=${e=>{setEm(e.target.value);setMsg("")}} onKeyDown=${e=>e.key==="Enter"&&send()}/>
      <button class="btn tap w-full" disabled=${busy} onClick=${send}>${busy?"A enviar…":"Enviar código"}</button>`}
@@ -380,6 +381,20 @@ const Toast=({onClose})=>html`<div class="fixed left-0 right-0 bottom-4 z-[60] f
 const WP={"Pistols":"Pistolas","SMGs":"Pistolas-metralhadoras","Rifles":"Rifles","Heavy":"Pesadas","Knives":"Facas","Gloves":"Luvas"};
 let SKC=null;
 const nz=s=>({id:s.id,name:s.name,w:(s.weapon&&(s.weapon.name||s.weapon))||"",wid:s.weapon&&s.weapon.weapon_id,wk:(s.weapon&&s.weapon.id)||"",cat:(s.category&&(s.category.name||s.category))||"Outros",rc:(s.rarity&&s.rarity.color)||"#9aa097",rn:(s.rarity&&(s.rarity.name||s.rarity))||"",pi:s.paint_index,img:s.image,st:!!s.stattrak,mn:s.min_float==null?0:s.min_float,mx:s.max_float==null?1:s.max_float});
+const SKURLS=["https://bymykel.github.io/CSGO-API/api/en/skins.json","https://cdn.jsdelivr.net/gh/ByMykel/CSGO-API@main/public/api/en/skins.json","https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public/api/en/skins.json"];
+const loadSkins=async()=>{let err="";for(const u of SKURLS){try{const c=new AbortController();const tm=setTimeout(()=>c.abort(),45000);const r=await fetch(u,{signal:c.signal});clearTimeout(tm);if(!r.ok){err="HTTP "+r.status;continue}
+ const j=await r.json();const arr=Array.isArray(j)?j:Object.values(j);const out=[];arr.forEach(s=>{try{if(s&&s.name)out.push(nz(s))}catch(e){}});if(out.length)return out;err="catálogo vazio"}catch(e){err=e&&e.name==="AbortError"?"tempo esgotado":String((e&&e.message)||e)}}throw new Error(err)};
+function SyncCard({maps,push}){
+ const [lg,setLgs]=useState([]);const [st,setSt]=useState("");
+ const load=async()=>{if(!LK.db){setSt("A base de dados não está configurada (Ligações e Anúncio, no painel admin).");return}
+  try{const r=await fetch(DB()+"/log.json?orderBy=%22%24key%22&limitToLast=15",{cache:"no-store"});if(!r.ok)throw 0;const j=await r.json();setLgs(Object.keys(j||{}).sort().reverse().map(k=>j[k]));setSt("Ligado à base de dados ✔")}
+  catch(e){setSt("Não consegui ler o registo de alterações. Confirma as regras do Firebase (inclui a secção log).")}};
+ useEffect(()=>{load()},[]);
+ return html`<div class="glass p-6 space-y-3"><div class="flex items-center justify-between gap-2 flex-wrap"><h2 class="font-bold text-xl">Sincronização com o painel admin</h2><div class="flex gap-2"><button class="ghost tap" onClick=${load}>Atualizar</button><button class="btn tap" onClick=${()=>{push(maps);setSt("Mapas enviados ✔");setTimeout(load,1200)}}>Enviar mapas agora</button></div></div>
+  <p class="text-sm" style=${{color:M}}>Tudo o que mudar neste site (perfis, passwords, mapas) fica registado. No painel admin, o botão "Sincronizar com o site" importa essas alterações.</p>
+  ${st&&html`<p class="text-xs" style=${{color:M}}>${st}</p>`}
+  ${lg.length>0&&html`<div class="text-xs space-y-1" style=${{color:M}}><b style=${{color:"var(--tx)"}}>Alterações recentes</b>${lg.map((x,i)=>html`<div key=${i}>${x.u} · ${x.t}${x.d?" · "+x.d:""} · ${x.ts?new Date(x.ts).toLocaleString("pt-PT"):""}</div>`)}</div>`}</div>`;
+}
 function Servers({guest}){
  const [cp,setCp]=useState("");const L=SERVERS.filter(s=>s.on!==false);
  return html`<div class="space-y-5 fade"><div><h2 class="font-bold text-xl">Servidores</h2><p class="text-sm mt-1" style=${{color:M}}>Liga-te diretamente aos servidores da equipa.</p></div>
@@ -397,8 +412,8 @@ function Servers({guest}){
 }
 function Skins({user,guest,ask}){
  const [all,setAll]=useState(SKC);const [er,setEr]=useState("");const [q,setQ]=useState("");const [cat,setCat]=useState("Todas");const [n,setN]=useState(48);const [sel,setSel]=useState(null);
- const [lo,setLo]=useState({});const [fl,setFl]=useState(0.07);const [sd,setSd]=useState(0);const [stt,setStt]=useState(false);const [tag,setTag]=useState("");const [cp,setCp]=useState(false);
- useEffect(()=>{if(SKC)return;fetch("https://bymykel.github.io/CSGO-API/api/en/skins.json").then(r=>r.json()).then(j=>{SKC=j.map(nz);setAll(SKC)}).catch(()=>setEr("Não foi possível carregar o catálogo de skins. Verifica a ligação e tenta de novo."))},[]);
+ const [tick,setTick]=useState(0);const [lo,setLo]=useState({});const [fl,setFl]=useState(0.07);const [sd,setSd]=useState(0);const [stt,setStt]=useState(false);const [tag,setTag]=useState("");const [cp,setCp]=useState(false);
+ useEffect(()=>{if(SKC){setAll(SKC);return}setEr("");loadSkins().then(j=>{SKC=j;setAll(j)}).catch(e=>setEr("Não foi possível carregar o catálogo de skins ("+e.message+")."))},[tick]);
  const key="fwt-skins-"+user;
  useEffect(()=>{if(!user)return;try{const l=JSON.parse(localStorage.getItem(key));if(l)setLo(l)}catch(e){}
   if(LK.db)fetch(DB()+"/skins/"+encodeURIComponent(user)+".json",{cache:"no-store"}).then(r=>r.json()).then(j=>{if(j&&j.items)setLo(j.items)}).catch(()=>{})},[user]);
@@ -414,7 +429,7 @@ function Skins({user,guest,ask}){
    ${items.length===0?html`<p class="text-sm" style=${{color:M}}>Ainda não equipaste nenhuma skin.</p>`:html`<div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">${items.map(([k,x])=>html`<div key=${k} class="flex items-center gap-3 p-2" style=${{borderRadius:16,background:"rgba(255,255,255,.06)",borderLeft:"4px solid "+x.rc}}><img src=${x.img} alt="" loading="lazy" style=${{width:64,height:48,objectFit:"contain"}}/><div class="flex-1 min-w-0 text-xs"><b class="block truncate">${x.name}</b><span style=${{color:M}}>Float ${(+x.wear).toFixed(2)} · Seed ${x.seed}${x.stattrak?" · StatTrak":""}</span></div><button class="ghost tap" aria-label="Remover" onClick=${()=>{const o={...lo};delete o[k];persist(o)}}><${I} n="trash" s=${14}/></button></div>`)}</div>`}</div>`}
   <div class="flex gap-2 flex-wrap"><input class="inp" style=${{maxWidth:320}} placeholder="Procurar skin (ex: AK-47 Redline)" value=${q} onInput=${e=>{setQ(e.target.value);setN(48)}}/>
    <div class="nav flex gap-1">${cats.map(c=>html`<button key=${c} class="tap px-3 py-2 rounded-2xl text-sm font-semibold whitespace-nowrap" onClick=${()=>{setCat(c);setN(48)}} style=${{background:cat===c?"var(--g)":"rgba(255,255,255,.08)",color:cat===c?"#0d1a04":"var(--tx)"}}>${WP[c]||c}</button>`)}</div></div>
-  ${er&&html`<p class="text-sm text-red-400">${er}</p>`}${!all&&!er&&html`<p class="text-sm" style=${{color:M}}>A carregar catálogo de skins…</p>`}
+  ${er&&html`<div class="flex items-center gap-3 flex-wrap"><p class="text-sm text-red-400">${er}</p><button class="ghost tap" onClick=${()=>setTick(tick+1)}>Tentar de novo</button></div>`}${!all&&!er&&html`<p class="text-sm" style=${{color:M}}>A carregar catálogo de skins (pode demorar alguns segundos)…</p>`}
   ${all&&html`<p class="text-xs" style=${{color:M}}>${list.length} skins</p><div class="grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-4">${list.slice(0,n).map(s=>html`<button key=${s.id} class="glass lift tap p-3 text-left" style=${{borderRadius:20,borderBottom:"3px solid "+s.rc}} onClick=${()=>open(s)}><img src=${s.img} alt="" loading="lazy" style=${{width:"100%",height:90,objectFit:"contain"}}/><div class="text-xs font-semibold mt-2">${s.name}</div><div class="text-[11px]" style=${{color:s.rc}}>${s.rn}</div></button>`)}</div>
    ${n<list.length&&html`<button class="ghost tap w-full justify-center" onClick=${()=>setN(n+48)}>Mostrar mais</button>`}`}
   ${sel&&html`<div class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto" style=${{background:"rgba(0,0,0,.6)",backdropFilter:"blur(8px)"}} onClick=${()=>setSel(null)}><div class="glass fade w-full max-w-md p-6 space-y-3" onClick=${e=>e.stopPropagation()}>
@@ -435,17 +450,17 @@ function App(){
   if(!LK.db){try{if(user){const l=JSON.parse(localStorage.getItem("fwt-prof-"+user));if(l)setFb(f=>({...f,[user]:l}))}}catch(e){}return}
   let on=true;const f=async()=>{try{const r=await fetch(DB()+"/profiles.json",{cache:"no-store"});if(r.ok){const j=await r.json();if(on&&j)setFb(j)}}catch(e){}};f();const i=setInterval(f,60000);return()=>{on=false;clearInterval(i)}},[user]);
  useEffect(()=>{if(!menu)return;const h=e=>{if(!e.target.closest(".pm"))setMenu(false)};document.addEventListener("click",h);return()=>document.removeEventListener("click",h)},[menu]);
- const saveProfile=async(u,p)=>{const o={disp:p.disp,bio:p.bio||"",faceit:p.faceit||"",avatar:p.avatar||"",...(p.eh?{eh:p.eh}:{})};setFb(f=>({...f,[u]:{...o,ts:Date.now()}}));
+ const saveProfile=async(u,p)=>{logEv(u,"perfil","atualizou o perfil");const o={disp:p.disp,bio:p.bio||"",faceit:p.faceit||"",avatar:p.avatar||"",...(p.eh?{eh:p.eh}:{})};setFb(f=>({...f,[u]:{...o,ts:Date.now()}}));
   if(LK.db){try{await fetch(DB()+"/profiles/"+u+".json",{method:"PUT",body:JSON.stringify({...o,ts:{".sv":"timestamp"}})})}catch(e){}}
   else{try{localStorage.setItem("fwt-prof-"+u,JSON.stringify({...o,ts:Date.now()}))}catch(e){}}};
- const saveMaps=m=>{setMaps(m);if(LK.db&&(eff[user]||{}).admin)fetch(DB()+"/maps.json",{method:"PUT",body:JSON.stringify({list:m,ts:{".sv":"timestamp"}})}).catch(()=>{})};
+ const saveMaps=m=>{setMaps(m);if(LK.db&&(eff[user]||{}).admin){logEv(user,"mapas","atualizou os mapas");fetch(DB()+"/maps.json",{method:"PUT",body:JSON.stringify({list:m,ts:{".sv":"timestamp"}})}).catch(()=>{})}};
  useEffect(()=>{if(!LK.db)return;let on=true;(async()=>{try{const r=await fetch(DB()+"/maps.json",{cache:"no-store"});const j=await r.json();if(on&&j&&j.list&&(j.ts||0)>MAPS_TS)setMaps(j.list)}catch(e){}})();return()=>{on=false}},[]);
  const guest=!user;const [lg,setLg]=useState(null);
  const a=eff[user]||accts[user]||{disp:"",admin:false};
  const items=MENU.filter(m=>m.on);
  const tabs=[...items.map(m=>[m.id,m.icon,m.label,m]),...(a.admin?[["config","sl","Configuração",null]]:[])];
  const cur=tabs.some(x=>x[0]===tab)?tab:(tabs[0]?tabs[0][0]:"hub");const cm=items.find(m=>m.id===cur);
- const body=cur==="config"?(a.admin?html`<${Config} maps=${maps} setMaps=${saveMaps}/>`:html`<${Denied}/>`):
+ const body=cur==="config"?(a.admin?html`<div class="space-y-6"><${SyncCard} maps=${maps} push=${saveMaps}/><${Config} maps=${maps} setMaps=${saveMaps}/></div>`:html`<${Denied}/>`):
   cm&&cm.kind==="page"?html`<${Page} m=${cm}/>`:cur==="opt"?html`<${Optimize}/>`:cur==="servers"?html`<${Servers} guest=${guest}/>`:cur==="skins"?html`<${Skins} user=${user} guest=${guest} ask=${()=>setLg("Entra para guardar o teu loadout de skins.")}/>`:cur==="roster"?html`<${Roster} accts=${eff}/>`:cur==="discord"?html`<${Discord}/>`:cur==="steam"?html`<${SteamGroup}/>`:html`<${Hub} disp=${a.disp} maps=${maps}/>`;
  return html`<div class="mx-auto p-4 sm:p-6 lg:flex lg:gap-6 lg:items-start" style=${{maxWidth:1760}}><${Chat} user=${user} accts=${eff} open=${chat} setOpen=${setChat} guest=${guest} ask=${()=>setLg("Entra para enviar mensagens no chat.")}/><div class="flex-1 min-w-0 w-full mx-auto space-y-4" style=${{maxWidth:1152}}>
   <header class="glass flex items-center gap-3 px-4 py-3" style=${{borderRadius:26,zIndex:30}}>
