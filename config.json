@@ -14,7 +14,7 @@
       "tipo": "Aim/Mira",
       "link": "https://steamcommunity.com/workshop/browse/?appid=730",
       "desc": "Bots configuráveis para treino de spray control e flicks a diferentes distâncias.",
-      "on": true
+      "on": false
     },
     {
       "id": 3,
@@ -22,7 +22,7 @@
       "tipo": "Retake",
       "link": "https://steamcommunity.com/workshop/browse/?appid=730",
       "desc": "Cenários de retake 3v4 nos bombsites A e B com utilitário limitado.",
-      "on": true
+      "on": false
     },
     {
       "id": 4,
