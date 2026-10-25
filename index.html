@@ -36,6 +36,11 @@ body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,"SF
 .bar{height:10px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
 .bar>div{height:100%;background:var(--g);border-radius:99px;box-shadow:0 0 14px #73E639;transition:width .1s}
 code{background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.35rem .6rem;font-size:.85rem;color:var(--g)}
+html{-webkit-text-size-adjust:100%}*{-webkit-tap-highlight-color:transparent}button,a{touch-action:manipulation}
+body{min-height:100dvh}.glass{overflow-wrap:anywhere}
+@media (hover:none){.lift:hover{transform:none}}
+@media (max-width:640px){.glass{border-radius:24px}.btn{padding:.75rem 1rem}.ghost{padding:.6rem .8rem}.inp{padding:.8rem .95rem}}
+@media (pointer:coarse){.ghost,.btn{min-height:44px}}
 </style>
 </head>
 <body>
@@ -65,6 +70,8 @@ const ACC0={
 ACC0.oliveirexfwt={pass:"oliveirafwt",disp:"Oliveirex",steam:"https://steamcommunity.com",email:"",phone:"",hidden:true};
 const ROSTER=["konkelfwt","fergod99fwt","leodobigodefwt","oleofwt","pixkitofwt"];
 const hs=s=>{let x=5381;for(let i=0;i<s.length;i++)x=((x<<5)+x+s.charCodeAt(i))|0;return x};
+const MENU=[{"id": "hub", "label": "Hub de Treino", "icon": "map", "on": true, "kind": "builtin"}, {"id": "opt", "label": "Otimização CS2", "icon": "zap", "on": true, "kind": "builtin"}, {"id": "roster", "label": "Roster", "icon": "users", "on": true, "kind": "builtin"}, {"id": "discord", "label": "Discord", "icon": "msg", "on": true, "kind": "builtin"}, {"id": "steam", "label": "Steam Group", "icon": "shield", "on": true, "kind": "builtin"}];
+const SITE={"name": "FULL W TEAM", "sub": "Escolhe uma rotina e treina com a equipa.", "login": "Inicia sessão para continuar", "footer": ""};
 const LK={discord:"https://discord.gg/NgYBeKcKzn",steam:"https://steamcommunity.com/groups/fullwteam",gname:"FULL W TEAM | FWT",news:""};
 const copy=async t=>{try{await navigator.clipboard.writeText(t);return true}catch(e){return false}};
 
@@ -75,8 +82,8 @@ function Login({accts,onLogin}){
  return html`<div class="min-h-screen flex items-center justify-center p-5"><div class="glass fade w-full max-w-sm p-8">
   <div class="flex flex-col items-center text-center mb-7">
    <div class="glass flex items-center justify-center mb-4" style=${{width:84,height:84,borderRadius:26}}><${Logo} s=${48}/></div>
-   <h1 class="title text-3xl font-extrabold tracking-tight">FULL W TEAM</h1>
-   <p class="text-sm mt-1" style=${{color:M}}>Inicia sessão para continuar</p></div>
+   <h1 class="title text-3xl font-extrabold tracking-tight break-words">${SITE.name}</h1>
+   <p class="text-sm mt-1" style=${{color:M}}>${SITE.login}</p></div>
   <div class="space-y-3">
    <input class="inp" placeholder="Utilizador" autocapitalize="none" value=${u} onInput=${e=>{setU(e.target.value);setErr("")}} onKeyDown=${e=>e.key==="Enter"&&go()}/>
    <input class="inp" type="password" placeholder="Palavra-passe" value=${p} onInput=${e=>{setP(e.target.value);setErr("")}} onKeyDown=${e=>e.key==="Enter"&&go()}/>
@@ -133,8 +140,8 @@ function Hub({disp,maps}){
   <section class="glass p-7 sm:p-10 overflow-hidden">
    <div class="wcut" style=${{position:"absolute",right:-20,top:-20,width:140,height:119,background:"rgba(115,230,57,.12)"}}></div>
    <p class="text-sm font-semibold" style=${{color:"var(--g)"}}>Bem-vindo de volta, ${disp}!</p>
-   <h1 class="title text-5xl sm:text-7xl font-black tracking-tight mt-2">FULL W TEAM</h1>
-   <p class="mt-3 max-w-xl" style=${{color:M}}>Escolhe uma rotina e treina com a equipa.</p></section>
+   <h1 class="title text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight mt-2 break-words">${SITE.name}</h1>
+   <p class="mt-3 max-w-xl" style=${{color:M}}>${SITE.sub}</p></section>
   ${LK.news&&html`<section class="glass p-4 flex items-center gap-3 fade" style=${{borderRadius:22}}><span style=${{color:"var(--g)"}}><${I} n="msg" s=${18}/></span><span class="text-sm">${LK.news}</span></section>`}<section><h2 class="font-bold text-xl mb-4">Hub de Treino</h2>
   ${act.length===0?html`<div class="glass p-8 text-center" style=${{color:M}}>Ainda não há mapas ativos. O admin pode ativá-los no Painel de Configuração.</div>`:
   html`<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">${act.map(m=>html`<div key=${m.id} class="glass lift p-6 flex flex-col fade">
@@ -164,7 +171,7 @@ function Optimize(){
  const L=a=>html`<ol class="list-decimal pl-5 space-y-1" style=${{color:M}}>${a.map((x,i)=>html`<li key=${i}>${x}</li>`)}</ol>`;
  return html`<div class="space-y-5 fade">
   <div><h2 class="font-bold text-xl">Otimização do CS2</h2><p class="text-sm mt-1" style=${{color:M}}>Mais fluidez sem tocar nas texturas nem nos gráficos do jogo. As barras são uma simulação: o browser não limpa nada no teu PC, por isso segue os passos indicados em cada ferramenta.</p></div>
-  <div class="grid gap-4 lg:grid-cols-2">
+  <div class="grid gap-4 md:grid-cols-2">
    <${Tool} icon="db" title="Limpar Cache de Shaders DirectX/Vulkan" desc="Remove engasgos e stutters causados por shaders corrompidos ou desatualizados." label="Limpar cache">
     ${L(["Steam → Definições → Shader Pre-Caching: apaga o cache do CS2 (ou da Steam).","Windows: apaga o conteúdo de %LocalAppData%\\NVIDIA\\DXCache (NVIDIA) ou usa a Limpeza de Disco → Cache de Shaders DirectX.","Reabre o CS2: os shaders são recompilados no primeiro arranque."])}<//>
    <${Tool} icon="cpu" title="Otimizar Agendamento do CPU (High Priority)" desc="Gera as opções de arranque para o CS2 correr com prioridade máxima." label="Gerar comandos">
@@ -249,29 +256,32 @@ function usePWA(){
  return{ip,setIp,upd,stand};
 }
 const Toast=({onClose})=>html`<div class="fixed left-0 right-0 bottom-4 z-[60] flex justify-center px-4"><div class="glass fade flex items-center gap-3 px-4 py-3" style=${{borderRadius:24}}><span style=${{color:"var(--g)"}}><${I} n="rf" s=${20}/></span><div class="text-sm"><b>Nova versão disponível</b><div class="text-xs" style=${{color:M}}>Atualiza para ver as novidades.</div></div><button class="btn tap" style=${{padding:".5rem .9rem",borderRadius:14}} onClick=${()=>location.reload()}>Atualizar</button><button class="ghost tap" aria-label="Fechar" onClick=${onClose}><${I} n="x" s=${14}/></button></div></div>`;
+const Page=({m})=>html`<div class="glass fade p-6 sm:p-8 space-y-4"><h2 class="text-2xl font-extrabold">${m.title||m.label}</h2><p class="whitespace-pre-wrap" style=${{color:M}}>${m.text}</p>${m.btnUrl&&html`<a class="btn tap" href=${m.btnUrl} target="_blank" rel="noopener noreferrer"><${I} n="ext" s=${16}/> ${m.btnLabel||"Abrir"}</a>`}</div>`;
 function App(){
  const [accts,setAccts]=useState(ACC0);const [user,setUser]=useState(()=>{try{const s=JSON.parse(localStorage.getItem("fwt-login"));if(s&&ACC0[s.u]&&hs(ACC0[s.u].pass)===s.h)return s.u}catch(e){}return null});const [tab,setTab]=useState("hub");
  const [maps,setMaps]=useState(SEED);const [set,setSet]=useState(false);const pwa=usePWA();const [dis,setDis]=useState(false);const toast=pwa.upd&&!dis?html`<${Toast} onClose=${()=>setDis(true)}/>`:null;
  if(!user)return html`<${Login} accts=${accts} onLogin=${k=>{setUser(k);setTab("hub")}}/>${toast}`;
  const a=accts[user];
- const tabs=[["hub","map","Hub de Treino"],["opt","zap","Otimização CS2"],["roster","users","Roster"],["discord","msg","Discord"],["steam","shield","Steam Group"],...(a.admin?[["config","sl","Configuração"]]:[])];
- const body=tab==="config"?(a.admin?html`<${Config} maps=${maps} setMaps=${setMaps}/>`:html`<${Denied}/>`):
-  tab==="opt"?html`<${Optimize}/>`:tab==="roster"?html`<${Roster} accts=${accts}/>`:tab==="discord"?html`<${Discord}/>`:tab==="steam"?html`<${SteamGroup}/>`:html`<${Hub} disp=${a.disp} maps=${maps}/>`;
+ const items=MENU.filter(m=>m.on);
+ const tabs=[...items.map(m=>[m.id,m.icon,m.label,m]),...(a.admin?[["config","sl","Configuração",null]]:[])];
+ const cur=tabs.some(x=>x[0]===tab)?tab:(tabs[0]?tabs[0][0]:"hub");const cm=items.find(m=>m.id===cur);
+ const body=cur==="config"?(a.admin?html`<${Config} maps=${maps} setMaps=${setMaps}/>`:html`<${Denied}/>`):
+  cm&&cm.kind==="page"?html`<${Page} m=${cm}/>`:cur==="opt"?html`<${Optimize}/>`:cur==="roster"?html`<${Roster} accts=${accts}/>`:cur==="discord"?html`<${Discord}/>`:cur==="steam"?html`<${SteamGroup}/>`:html`<${Hub} disp=${a.disp} maps=${maps}/>`;
  return html`<div class="max-w-6xl mx-auto p-4 sm:p-6 space-y-4">
   <header class="glass flex items-center gap-3 px-4 py-3" style=${{borderRadius:26}}>
-   <${Logo} s=${34}/><b class="tracking-tight">FULL W TEAM</b>
+   <${Logo} s=${34}/><b class="tracking-tight">${SITE.name}</b>
    <span class="text-xs hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full ml-auto" style=${{background:"rgba(255,255,255,.08)"}}><${I} n=${a.admin?"shield":"user"} s=${14}/>${a.disp}${a.admin?" · Admin":""}</span>
    <button class="ghost tap ml-auto sm:ml-0" aria-label="Definições de Conta" onClick=${()=>setSet(true)}><${I} n="gear" s=${17}/><span class="hidden sm:inline">Definições</span></button>
    <button class="ghost tap" onClick=${()=>{try{localStorage.removeItem("fwt-login")}catch(e){}setUser(null)}}><${I} n="out" s=${16}/> <span class="hidden sm:inline">Terminar Sessão</span></button></header>
-  <nav class="glass nav flex gap-1 p-1.5" style=${{borderRadius:22}}>${tabs.map(([id,ic,l])=>html`<button key=${id} onClick=${()=>setTab(id)} class="tap flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-semibold whitespace-nowrap" style=${{background:tab===id?"var(--g)":"transparent",color:tab===id?"#0d1a04":"var(--tx)"}}><${I} n=${ic} s=${16}/>${l}</button>`)}</nav>
-  ${body}
+  <nav class="glass nav flex gap-1 p-1.5" style=${{borderRadius:22}}>${tabs.map(([id,ic,l,m])=>html`<button key=${id} onClick=${()=>{if(m&&m.kind==="link"&&m.url)window.open(m.url,"_blank","noopener");else setTab(id)}} class="tap flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-semibold whitespace-nowrap" style=${{background:cur===id?"var(--g)":"transparent",color:cur===id?"#0d1a04":"var(--tx)"}}><${I} n=${P[ic]?ic:"link"} s=${16}/>${l}</button>`)}</nav>
+  ${body}${SITE.footer&&html`<p class="text-center text-xs pt-2" style=${{color:M}}>${SITE.footer}</p>`}
   ${toast}${set&&html`<${Settings} user=${user} acc=${a} onClose=${()=>setSet(false)} onSave=${p=>setAccts({...accts,[user]:{...a,...p}})}/>`}</div>`;
 }
 function applyCfg(c){try{
  if(c.maps){SEED.length=0;SEED.push(...c.maps)}
  if(c.accounts){Object.keys(ACC0).forEach(k=>delete ACC0[k]);Object.assign(ACC0,c.accounts)}
  if(c.roster){ROSTER.length=0;ROSTER.push(...c.roster.filter(k=>ACC0[k]))}
- if(c.links)Object.assign(LK,c.links);if(c.news!==undefined)LK.news=c.news}catch(e){}}
+ if(c.menu&&c.menu.length){MENU.length=0;MENU.push(...c.menu)}if(c.site){Object.assign(SITE,c.site);document.title=SITE.name}if(c.links)Object.assign(LK,c.links);if(c.news!==undefined)LK.news=c.news}catch(e){}}
 const go=()=>ReactDOM.createRoot(document.getElementById("root")).render(html`<${App}/>`);
 fetch("config.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(c=>{if(c)applyCfg(c)}).catch(()=>{}).then(go);
 </script>
