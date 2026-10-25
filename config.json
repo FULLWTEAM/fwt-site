@@ -1,94 +1,94 @@
 {
- "maps": [
-  {
-   "id": 1,
-   "nome": "Mirage",
-   "tipo": "Granadas",
-   "link": "https://steamcommunity.com/workshop/browse/?appid=730",
-   "desc": "Smokes, molotovs e flashes para execuções A e B. Lineups marcados no chão.",
-   "on": true
+  "maps": [
+    {
+      "id": 1,
+      "nome": "Mirage",
+      "tipo": "Granadas",
+      "link": "https://steamcommunity.com/workshop/browse/?appid=730",
+      "desc": "Smokes, molotovs e flashes para execuções A e B. Lineups marcados no chão.",
+      "on": true
+    },
+    {
+      "id": 2,
+      "nome": "Aim_Botz",
+      "tipo": "Aim/Mira",
+      "link": "https://steamcommunity.com/workshop/browse/?appid=730",
+      "desc": "Bots configuráveis para treino de spray control e flicks a diferentes distâncias.",
+      "on": true
+    },
+    {
+      "id": 3,
+      "nome": "Inferno",
+      "tipo": "Retake",
+      "link": "https://steamcommunity.com/workshop/browse/?appid=730",
+      "desc": "Cenários de retake 3v4 nos bombsites A e B com utilitário limitado.",
+      "on": true
+    },
+    {
+      "id": 4,
+      "nome": "Dust2",
+      "tipo": "Posicionamento",
+      "link": "https://steamcommunity.com/workshop/browse/?appid=730",
+      "desc": "Ângulos, off-angles e posições de hold para CT e T.",
+      "on": false
+    }
+  ],
+  "accounts": {
+    "konkelfwt": {
+      "pass": "konkelFWT2026",
+      "admin": true,
+      "disp": "Konkel",
+      "steam": "https://steamcommunity.com/id/konkelfwt/",
+      "email": "",
+      "phone": ""
+    },
+    "fergod99fwt": {
+      "pass": "fergod991",
+      "disp": "FerGod",
+      "steam": "https://steamcommunity.com/profiles/76561199682614793",
+      "email": "",
+      "phone": ""
+    },
+    "leodobigodefwt": {
+      "pass": "bigode123",
+      "disp": "Leo do Bigode",
+      "steam": "https://steamcommunity.com",
+      "email": "",
+      "phone": ""
+    },
+    "oliveirexfwt": {
+      "pass": "oliveirafwt",
+      "disp": "Oliveirex",
+      "steam": "https://steamcommunity.com",
+      "email": "",
+      "phone": ""
+    },
+    "oleofwt": {
+      "pass": "manuoleofwt",
+      "disp": "Oleo",
+      "steam": "https://steamcommunity.com/profiles/76561199871391790",
+      "email": "",
+      "phone": ""
+    },
+    "pixkitofwt": {
+      "pass": "pixkofwt",
+      "disp": "Pixkito",
+      "steam": "https://steamcommunity.com/id/pixkito",
+      "email": "",
+      "phone": ""
+    }
   },
-  {
-   "id": 2,
-   "nome": "Aim_Botz",
-   "tipo": "Aim/Mira",
-   "link": "https://steamcommunity.com/workshop/browse/?appid=730",
-   "desc": "Bots configuráveis para treino de spray control e flicks a diferentes distâncias.",
-   "on": true
+  "roster": [
+    "konkelfwt",
+    "fergod99fwt",
+    "leodobigodefwt",
+    "oleofwt",
+    "pixkitofwt"
+  ],
+  "links": {
+    "discord": "https://discord.gg/NgYBeKcKzn",
+    "steam": "https://steamcommunity.com/groups/fullwteam",
+    "gname": "FULL W TEAM | FWT"
   },
-  {
-   "id": 3,
-   "nome": "Inferno",
-   "tipo": "Retake",
-   "link": "https://steamcommunity.com/workshop/browse/?appid=730",
-   "desc": "Cenários de retake 3v4 nos bombsites A e B com utilitário limitado.",
-   "on": true
-  },
-  {
-   "id": 4,
-   "nome": "Dust2",
-   "tipo": "Posicionamento",
-   "link": "https://steamcommunity.com/workshop/browse/?appid=730",
-   "desc": "Ângulos, off-angles e posições de hold para CT e T.",
-   "on": false
-  }
- ],
- "accounts": {
-  "konkelfwt": {
-   "pass": "konkelFWT2026",
-   "admin": true,
-   "disp": "Konkel",
-   "steam": "https://steamcommunity.com/id/konkelfwt/",
-   "email": "",
-   "phone": ""
-  },
-  "fergod99fwt": {
-   "pass": "fergod991",
-   "disp": "FerGod",
-   "steam": "https://steamcommunity.com/profiles/76561199682614793",
-   "email": "",
-   "phone": ""
-  },
-  "leodobigodefwt": {
-   "pass": "bigode123",
-   "disp": "Leo do Bigode",
-   "steam": "https://steamcommunity.com",
-   "email": "",
-   "phone": ""
-  },
-  "oliveirexfwt": {
-   "pass": "oliveirafwt",
-   "disp": "Oliveirex",
-   "steam": "https://steamcommunity.com",
-   "email": "",
-   "phone": ""
-  },
-  "oleofwt": {
-   "pass": "manuoleofwt",
-   "disp": "Oleo",
-   "steam": "https://steamcommunity.com/profiles/76561199871391790",
-   "email": "",
-   "phone": ""
-  },
-  "pixkitofwt": {
-   "pass": "pixkofwt",
-   "disp": "Pixkito",
-   "steam": "https://steamcommunity.com/id/pixkito",
-   "email": "",
-   "phone": ""
-  }
- },
- "roster": [
-  "konkelfwt",
-  "fergod99fwt",
-  "leodobigodefwt",
-  "oleofwt",
-  "pixkitofwt"
- ],
- "links": {
-  "discord": "https://discord.gg/NgYBeKcKzn",
-  "steam": "https://steamcommunity.com/groups/fullwteam",
-  "gname": "FULL W TEAM | FWT"
- },
- "news": ""
+  "news": ""
 }
