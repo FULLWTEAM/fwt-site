@@ -79,7 +79,7 @@ const hs=s=>{let x=5381;for(let i=0;i<s.length;i++)x=((x<<5)+x+s.charCodeAt(i))|
 const MENU=[{"id": "hub", "label": "Hub de Treino", "icon": "map", "on": true, "kind": "builtin"}, {"id": "opt", "label": "Otimização CS2", "icon": "zap", "on": true, "kind": "builtin"}, {"id": "roster", "label": "Roster", "icon": "users", "on": true, "kind": "builtin"}, {"id": "discord", "label": "Discord", "icon": "msg", "on": true, "kind": "builtin"}, {"id": "steam", "label": "Steam Group", "icon": "shield", "on": true, "kind": "builtin"}, {"id": "servers", "label": "Servidores", "icon": "db", "on": true, "kind": "builtin"}, {"id": "skins", "label": "Skins", "icon": "shield", "on": true, "kind": "builtin"}];
 const DEFMENU=JSON.parse(JSON.stringify(MENU));
 const SITE={"name": "FULL W TEAM", "sub": "Escolhe uma rotina e treina com a equipa.", "login": "Inicia sessão para continuar", "footer": ""};
-const SERVERS=[];let MAPS_TS=0;
+const SERVERS=[];let MAPS_TS=0;let RAWCFG=null;
 const LK={ejsService:"",ejsTemplate:"",ejsKey:"",dOnline:"128",dMembers:"412",dVoice:"9",gMembers:"—",db:"",fkey:"",discord:"https://discord.gg/NgYBeKcKzn",steam:"https://steamcommunity.com/groups/fullwteam",gname:"FULL W TEAM | FWT",news:""};
 const DB=()=>{let u=(LK.db||"").trim().replace(/\.json.*$/,"").replace(/\/(chat|profiles)(\/.*)?$/,"").replace(/\/+$/,"");if(u&&!/^https?:\/\//i.test(u))u="https://"+u;return u};
 const dbOk=u=>/^https:\/\/[a-z0-9.-]+\.(firebaseio\.com|firebasedatabase\.app)$/i.test(u);
@@ -384,14 +384,56 @@ const nz=s=>({id:s.id,name:s.name,w:(s.weapon&&(s.weapon.name||s.weapon))||"",wi
 const SKURLS=["https://bymykel.github.io/CSGO-API/api/en/skins.json","https://cdn.jsdelivr.net/gh/ByMykel/CSGO-API@main/public/api/en/skins.json","https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public/api/en/skins.json"];
 const loadSkins=async()=>{let err="";for(const u of SKURLS){try{const c=new AbortController();const tm=setTimeout(()=>c.abort(),45000);const r=await fetch(u,{signal:c.signal});clearTimeout(tm);if(!r.ok){err="HTTP "+r.status;continue}
  const j=await r.json();const arr=Array.isArray(j)?j:Object.values(j);const out=[];arr.forEach(s=>{try{if(s&&s.name)out.push(nz(s))}catch(e){}});if(out.length)return out;err="catálogo vazio"}catch(e){err=e&&e.name==="AbortError"?"tempo esgotado":String((e&&e.message)||e)}}throw new Error(err)};
-function SyncCard({maps,push}){
- const [lg,setLgs]=useState([]);const [st,setSt]=useState("");
+const GHK="fwt-gh";
+const b64=s=>btoa(unescape(encodeURIComponent(s)));
+const parseRepo=s=>{s=(s||"").trim();let m=s.match(/github\.com\/([^\/\s]+)\/([^\/\s#?]+)/i);if(m)return{owner:m[1],repo:m[2].replace(/\.git$/,"")};m=s.match(/([^\/\s.]+)\.github\.io\/([^\/\s#?]+)/i);if(m)return{owner:m[1],repo:m[2]};return null};
+const ghUrl=g=>"https://api.github.com/repos/"+g.owner.trim()+"/"+g.repo.trim()+"/contents/"+g.path.trim().replace(/^\/+/,"");
+const ghH=g=>({Authorization:"Bearer "+g.token.trim(),Accept:"application/vnd.github+json"});
+async function ghRead(g){
+ const r=await fetch(ghUrl(g)+"?ref="+encodeURIComponent(g.branch.trim()),{headers:ghH(g),cache:"no-store"});
+ if(r.status===404)return{sha:null,cfg:null};
+ if(!r.ok)throw new Error(r.status===401?"Token inválido ou expirado.":r.status===403?"Sem permissão: o token precisa de Contents: Read and write.":"Erro "+r.status+" ao ler o repositório.");
+ const j=await r.json();let cfg=null;try{cfg=JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\n/g,"")))))}catch(e){}
+ return{sha:j.sha,cfg}}
+function SyncCard({maps,push,eff}){
+ const D0={owner:"",repo:"",branch:"main",path:"config.json",token:"",auto:true,link:""};
+ const [g,setG]=useState(()=>{try{return{...D0,...JSON.parse(localStorage.getItem(GHK))}}catch(e){return D0}});
+ const [lg,setLgs]=useState([]);const [st,setSt]=useState("");const [gs,setGs]=useState({s:"",e:false});const first=useRef(true);
+ useEffect(()=>{try{localStorage.setItem(GHK,JSON.stringify(g))}catch(e){}},[g]);
+ const ready=!!(g.owner&&g.repo&&g.token);const S=k=>v=>setG({...g,[k]:v});
+ const lk=g.link||(g.owner&&g.repo?"https://github.com/"+g.owner+"/"+g.repo:"");
+ const F=(l,v,f,o={})=>html`<label class="block"><span class="text-xs font-semibold px-1" style=${{color:M}}>${l}</span><input class="inp mt-1" value=${v||""} onInput=${e=>f(e.target.value)} ...${o}/></label>`;
  const load=async()=>{if(!LK.db){setSt("A base de dados não está configurada (Ligações e Anúncio, no painel admin).");return}
   try{const r=await fetch(DB()+"/log.json?orderBy=%22%24key%22&limitToLast=15",{cache:"no-store"});if(!r.ok)throw 0;const j=await r.json();setLgs(Object.keys(j||{}).sort().reverse().map(k=>j[k]));setSt("Ligado à base de dados ✔")}
   catch(e){setSt("Não consegui ler o registo de alterações. Confirma as regras do Firebase (inclui a secção log).")}};
  useEffect(()=>{load()},[]);
- return html`<div class="glass p-6 space-y-3"><div class="flex items-center justify-between gap-2 flex-wrap"><h2 class="font-bold text-xl">Sincronização com o painel admin</h2><div class="flex gap-2"><button class="ghost tap" onClick=${load}>Atualizar</button><button class="btn tap" onClick=${()=>{push(maps);setSt("Mapas enviados ✔");setTimeout(load,1200)}}>Enviar mapas agora</button></div></div>
-  <p class="text-sm" style=${{color:M}}>Tudo o que mudar neste site (perfis, passwords, mapas) fica registado. No painel admin, o botão "Sincronizar com o site" importa essas alterações.</p>
+ const build=async base=>{
+  const acc={...(base.accounts||{})};const ks=Object.keys(acc);const ovs=await Promise.all(ks.map(k=>getOv(k)));
+  ks.forEach((k,i)=>{const a=acc[k],e=eff[k]||{},pf={};["disp","bio","avatar","faceit","eh"].forEach(z=>{if(e[z]!==undefined)pf[z]=e[z]});
+   let o={...a,...pf,pu:Date.now()};const ov=ovs[i];if(ov&&ov.h&&(ov.ts||0)>(a.pwts||0))o={...o,ph:ov.h,pass:"",pwts:ov.ts};acc[k]=o});
+  return{...base,accounts:acc,maps,mapsTs:Date.now()}};
+ const pub=async()=>{
+  if(!ready){setGs({s:"Preenche o link do repositório e o token.",e:true});return}
+  setGs({s:"A publicar no GitHub…",e:false});
+  try{
+   for(let i=0;i<2;i++){
+    const {sha,cfg}=await ghRead(g);const n=await build(cfg||RAWCFG||{});
+    const w=await fetch(ghUrl(g),{method:"PUT",headers:{...ghH(g),"Content-Type":"application/json"},body:JSON.stringify({message:"Atualização via site principal",content:b64(JSON.stringify(n,null,2)),branch:g.branch.trim(),...(sha?{sha}:{})})});
+    if(w.ok){RAWCFG=n;setGs({s:"Publicado às "+new Date().toLocaleTimeString("pt-PT",{hour:"2-digit",minute:"2-digit"})+" ✔ O site atualiza em ~1 minuto e no painel admin usa «Carregar config do site».",e:false});return}
+    if(w.status===404)throw new Error("Repositório, branch ou token não encontrados.");
+    if(w.status!==409&&w.status!==422)throw new Error("Erro "+w.status+" ao gravar.")}
+   throw new Error("Conflito ao gravar. Tenta de novo.")
+  }catch(e){setGs({s:e instanceof TypeError?"Sem ligação ao GitHub.":e.message,e:true})}};
+ useEffect(()=>{if(first.current){first.current=false;return}if(!g.auto||!ready)return;const t=setTimeout(pub,3000);return()=>clearTimeout(t)},[JSON.stringify(maps)]);
+ return html`<div class="glass p-6 space-y-3"><div class="flex items-center justify-between gap-2 flex-wrap"><h2 class="font-bold text-xl">Sincronização com o painel admin</h2><span class="text-xs font-bold px-3 py-1 rounded-full" style=${{background:ready?"rgba(115,230,57,.18)":"rgba(255,255,255,.1)",color:ready?"var(--g)":M}}>${ready?"GitHub ligado":"Por configurar"}</span></div>
+  <p class="text-sm" style=${{color:M}}>Liga este site ao repositório do GitHub. As alterações feitas aqui (mapas, perfis, passwords) são escritas no config.json, e o painel admin vê-as com «Carregar config do site».</p>
+  ${F("Link do repositório ou do site (GitHub)",lk,v=>{const r=parseRepo(v);setG({...g,link:v,...(r||{})})},{placeholder:"https://github.com/utilizador/fwtsite"})}
+  ${F("Token do GitHub (Contents: Read and write)",g.token,S("token"),{type:"password",autocomplete:"off"})}
+  <div class="flex items-center gap-3 cursor-pointer select-none" onClick=${()=>setG({...g,auto:!g.auto})}><div class=${"sw "+(g.auto?"on":"")}><i></i></div><span class="text-sm">Publicar automaticamente quando eu alterar os mapas</span></div>
+  <div class="flex gap-2 flex-wrap items-center"><button class="btn tap" onClick=${pub}><${I} n="check" s=${16}/> Publicar tudo no GitHub agora</button><button class="ghost tap" onClick=${()=>{push(maps);setSt("Mapas enviados ✔");setTimeout(load,1200)}}>Enviar mapas agora</button><button class="ghost tap" onClick=${load}>Atualizar registo</button></div>
+  ${gs.s&&html`<p class="text-sm" style=${{color:gs.e?"#f87171":"var(--g)"}}>${gs.s}</p>`}
+  <details class="text-sm" style=${{color:M}}><summary class="cursor-pointer">Avançado</summary><div class="grid gap-3 sm:grid-cols-2 mt-3">${F("Branch",g.branch,S("branch"))}${F("Ficheiro no repositório",g.path,S("path"))}</div></details>
+  <p class="text-xs" style=${{color:M}}>O token fica só neste dispositivo e nunca vai para o config.json. Usa-o apenas no teu próprio computador.</p>
   ${st&&html`<p class="text-xs" style=${{color:M}}>${st}</p>`}
   ${lg.length>0&&html`<div class="text-xs space-y-1" style=${{color:M}}><b style=${{color:"var(--tx)"}}>Alterações recentes</b>${lg.map((x,i)=>html`<div key=${i}>${x.u} · ${x.t}${x.d?" · "+x.d:""} · ${x.ts?new Date(x.ts).toLocaleString("pt-PT"):""}</div>`)}</div>`}</div>`;
 }
@@ -460,7 +502,7 @@ function App(){
  const items=MENU.filter(m=>m.on);
  const tabs=[...items.map(m=>[m.id,m.icon,m.label,m]),...(a.admin?[["config","sl","Configuração",null]]:[])];
  const cur=tabs.some(x=>x[0]===tab)?tab:(tabs[0]?tabs[0][0]:"hub");const cm=items.find(m=>m.id===cur);
- const body=cur==="config"?(a.admin?html`<div class="space-y-6"><${SyncCard} maps=${maps} push=${saveMaps}/><${Config} maps=${maps} setMaps=${saveMaps}/></div>`:html`<${Denied}/>`):
+ const body=cur==="config"?(a.admin?html`<div class="space-y-6"><${SyncCard} maps=${maps} push=${saveMaps} eff=${eff}/><${Config} maps=${maps} setMaps=${saveMaps}/></div>`:html`<${Denied}/>`):
   cm&&cm.kind==="page"?html`<${Page} m=${cm}/>`:cur==="opt"?html`<${Optimize}/>`:cur==="servers"?html`<${Servers} guest=${guest}/>`:cur==="skins"?html`<${Skins} user=${user} guest=${guest} ask=${()=>setLg("Entra para guardar o teu loadout de skins.")}/>`:cur==="roster"?html`<${Roster} accts=${eff}/>`:cur==="discord"?html`<${Discord}/>`:cur==="steam"?html`<${SteamGroup}/>`:html`<${Hub} disp=${a.disp} maps=${maps}/>`;
  return html`<div class="mx-auto p-4 sm:p-6 lg:flex lg:gap-6 lg:items-start" style=${{maxWidth:1760}}><${Chat} user=${user} accts=${eff} open=${chat} setOpen=${setChat} guest=${guest} ask=${()=>setLg("Entra para enviar mensagens no chat.")}/><div class="flex-1 min-w-0 w-full mx-auto space-y-4" style=${{maxWidth:1152}}>
   <header class="glass flex items-center gap-3 px-4 py-3" style=${{borderRadius:26,zIndex:30}}>
@@ -480,7 +522,7 @@ function applyCfg(c){try{if(c.servers){SERVERS.length=0;SERVERS.push(...c.server
  if(c.roster){ROSTER.length=0;ROSTER.push(...c.roster.filter(k=>ACC0[k]))}
  if(c.menu&&c.menu.length){MENU.length=0;MENU.push(...c.menu);DEFMENU.forEach(x=>{if(!MENU.some(m=>m.id===x.id))MENU.push(x)})}if(c.site){Object.assign(SITE,c.site);document.title=SITE.name}if(c.links)Object.assign(LK,c.links);if(c.news!==undefined)LK.news=c.news}catch(e){}}
 const go=()=>ReactDOM.createRoot(document.getElementById("root")).render(html`<${App}/>`);
-fetch("config.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(c=>{if(c)applyCfg(c)}).catch(()=>{}).then(go);
+fetch("config.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(c=>{if(c){RAWCFG=c;applyCfg(c)}}).catch(()=>{}).then(go);
 </script>
 </body>
 </html>
