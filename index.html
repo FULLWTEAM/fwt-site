@@ -78,23 +78,26 @@ const hs=s=>{let x=5381;for(let i=0;i<s.length;i++)x=((x<<5)+x+s.charCodeAt(i))|
 const MENU=[{"id": "hub", "label": "Hub de Treino", "icon": "map", "on": true, "kind": "builtin"}, {"id": "opt", "label": "Otimização CS2", "icon": "zap", "on": true, "kind": "builtin"}, {"id": "roster", "label": "Roster", "icon": "users", "on": true, "kind": "builtin"}, {"id": "discord", "label": "Discord", "icon": "msg", "on": true, "kind": "builtin"}, {"id": "steam", "label": "Steam Group", "icon": "shield", "on": true, "kind": "builtin"}];
 const SITE={"name": "FULL W TEAM", "sub": "Escolhe uma rotina e treina com a equipa.", "login": "Inicia sessão para continuar", "footer": ""};
 const LK={dOnline:"128",dMembers:"412",dVoice:"9",gMembers:"—",db:"",fkey:"",discord:"https://discord.gg/NgYBeKcKzn",steam:"https://steamcommunity.com/groups/fullwteam",gname:"FULL W TEAM | FWT",news:""};
+const DB=()=>{let u=(LK.db||"").trim().replace(/\.json.*$/,"").replace(/\/(chat|profiles)(\/.*)?$/,"").replace(/\/+$/,"");if(u&&!/^https?:\/\//i.test(u))u="https://"+u;return u};
+const dbOk=u=>/^https:\/\/[a-z0-9.-]+\.(firebaseio\.com|firebasedatabase\.app)$/i.test(u);
 const copy=async t=>{try{await navigator.clipboard.writeText(t);return true}catch(e){return false}};
 
-function Login({accts,onLogin}){
+function Login({accts,onLogin,onClose,reason}){
  const [u,setU]=useState("");const [p,setP]=useState("");const [err,setErr]=useState("");const [rm,setRm]=useState(false);
  const go=()=>{const k=u.trim().toLowerCase();const a=accts[k];
   if(a&&a.pass===p){try{rm?localStorage.setItem("fwt-login",JSON.stringify({u:k,h:hs(p)})):localStorage.removeItem("fwt-login")}catch(e){}onLogin(k)}else setErr("Utilizador ou palavra-passe incorretos.")};
- return html`<div class="min-h-screen flex items-center justify-center p-5"><div class="glass fade w-full max-w-sm p-8">
+ return html`<div class="fixed inset-0 z-50 flex items-center justify-center p-5 overflow-y-auto" style=${{background:"rgba(0,0,0,.55)",backdropFilter:"blur(8px)"}} onClick=${onClose}><div class="glass fade w-full max-w-sm p-8" onClick=${e=>e.stopPropagation()}>
   <div class="flex flex-col items-center text-center mb-7">
    <div class="glass flex items-center justify-center mb-4" style=${{width:84,height:84,borderRadius:26}}><${Logo} s=${48}/></div>
    <h1 class="title text-3xl font-extrabold tracking-tight break-words">${SITE.name}</h1>
-   <p class="text-sm mt-1" style=${{color:M}}>${SITE.login}</p></div>
+   <p class="text-sm mt-1" style=${{color:M}}>${SITE.login}</p>${reason&&html`<p class="text-sm mt-3 font-semibold" style=${{color:"var(--g)"}}>${reason}</p>`}</div>
   <div class="space-y-3">
    <input class="inp" placeholder="Utilizador" autocapitalize="none" value=${u} onInput=${e=>{setU(e.target.value);setErr("")}} onKeyDown=${e=>e.key==="Enter"&&go()}/>
    <input class="inp" type="password" placeholder="Palavra-passe" value=${p} onInput=${e=>{setP(e.target.value);setErr("")}} onKeyDown=${e=>e.key==="Enter"&&go()}/>
    ${err&&html`<p class="text-sm text-red-400 px-1">${err}</p>`}
    <div role="switch" aria-checked=${rm} class="flex items-center justify-between px-1 cursor-pointer select-none" onClick=${()=>setRm(!rm)}><span class="text-sm">Memorizar login</span><div class=${"sw "+(rm?"on":"")}><i></i></div></div>
-   <button class="btn tap w-full" onClick=${go}><${I} n="lock"/> Entrar</button></div></div></div>`;
+   <button class="btn tap w-full" onClick=${go}><${I} n="lock"/> Entrar</button>
+   <button class="ghost tap w-full justify-center" onClick=${onClose}>Continuar como visitante</button></div></div></div>`;
 }
 
 function Settings({user,acc,onSave,onClose}){
@@ -145,7 +148,7 @@ function Hub({disp,maps}){
  return html`<div class="space-y-6 fade">
   <section class="glass p-7 sm:p-10 overflow-hidden">
    <div class="wcut" style=${{position:"absolute",right:-20,top:-20,width:140,height:119,background:"rgba(115,230,57,.12)"}}></div>
-   <p class="text-sm font-semibold" style=${{color:"var(--g)"}}>Bem-vindo de volta, ${disp}!</p>
+   <p class="text-sm font-semibold" style=${{color:"var(--g)"}}>${disp?"Bem-vindo de volta, "+disp+"!":"Bem-vindo à equipa! Entra para conversar e editar o teu perfil."}</p>
    <h1 class="title text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight mt-2 break-words">${SITE.name}</h1>
    <p class="mt-3 max-w-xl" style=${{color:M}}>${SITE.sub}</p></section>
   ${LK.news&&html`<section class="glass p-4 flex items-center gap-3 fade" style=${{borderRadius:22}}><span style=${{color:"var(--g)"}}><${I} n="msg" s=${18}/></span><span class="text-sm">${LK.news}</span></section>`}<section><h2 class="font-bold text-xl mb-4">Hub de Treino</h2>
@@ -229,12 +232,12 @@ function Roster({accts}){
    <${Faceit} nick=${a.faceit}/>
    <a class="btn tap mt-4 w-full" href=${a.steam} target="_blank" rel="noopener noreferrer"><${I} n="ext" s=${16}/> Abrir Steam</a></div>`})}</div></div>`;
 }
-function Chat({user,accts,open,setOpen}){
+function Chat({user,accts,open,setOpen,guest,ask}){
  const [ms,setMs]=useState([]);const [tx,setTx]=useState("");const [er,setEr]=useState("");const [more,setMore]=useState(true);const box=useRef(null);const stick=useRef(true);
- const base=LK.db?LK.db.replace(/\/+$/,"")+"/chat":"";
+ const bad=!!LK.db&&!dbOk(DB());const base=LK.db&&!bad?DB()+"/chat":"";
  const q=x=>base+".json?orderBy=%22%24key%22&"+x;
  const put=j=>setMs(o=>{const m={};o.forEach(x=>m[x.id]=x);Object.keys(j||{}).forEach(k=>m[k]={id:k,...j[k]});return Object.values(m).sort((a,b)=>a.id<b.id?-1:1)});
- const poll=async()=>{try{const r=await fetch(q("limitToLast=100"),{cache:"no-store"});if(r.ok){put(await r.json());setEr("")}else setEr("Chat indisponível ("+r.status+").")}catch(e){setEr("Sem ligação ao chat.")}};
+ const poll=async()=>{try{const r=await fetch(q("limitToLast=100"),{cache:"no-store"});if(r.ok){put(await r.json());setEr("")}else setEr(r.status===401||r.status===403?"Sem permissão: o admin tem de publicar as regras no Firebase.":r.status===404?"Base de dados não encontrada. Confirma o URL no painel.":"Chat indisponível ("+r.status+").")}catch(e){setEr("Não consegui contactar a base de dados. Confirma o URL no painel (termina em firebasedatabase.app ou firebaseio.com).")}};
  useEffect(()=>{if(!base)return;poll();const i=setInterval(()=>{if(!document.hidden)poll()},4000);return()=>clearInterval(i)},[base]);
  useEffect(()=>{const b=box.current;if(b&&stick.current)b.scrollTop=b.scrollHeight},[ms,open]);
  const older=async()=>{if(!ms.length)return;stick.current=false;try{const r=await fetch(q("endAt=%22"+ms[0].id+"%22&limitToLast=51"),{cache:"no-store"});const j=await r.json();if(Object.keys(j||{}).length<=1)setMore(false);put(j)}catch(e){}};
@@ -244,7 +247,7 @@ function Chat({user,accts,open,setOpen}){
   ${!open&&html`<button class="btn tap fab" aria-label="Abrir chat" onClick=${()=>setOpen(true)}><${I} n="msg" s=${24}/></button>`}
   <aside class=${"glass chat "+(open?"open":"")}>
    <div class="flex items-center justify-between px-4 py-3" style=${{borderBottom:"1px solid rgba(255,255,255,.1)"}}><b>Chat da equipa</b><button class="ghost tap lg:hidden" aria-label="Fechar chat" onClick=${()=>setOpen(false)}><${I} n="x" s=${16}/></button></div>
-   ${!base?html`<p class="p-5 text-sm" style=${{color:M}}>O chat ainda não está configurado. O admin tem de ligar a base de dados no painel (Ligações e Anúncio).</p>`:html`
+   ${!base?html`<p class="p-5 text-sm" style=${{color:M}}>${bad?"O URL da base de dados no painel não parece válido: tem de ser o endereço da Realtime Database (termina em firebasedatabase.app ou firebaseio.com), não o link da consola.":"O chat ainda não está configurado. O admin tem de ligar a base de dados no painel (Ligações e Anúncio)."}</p>`:html`
    <div class="msgs px-3 py-3 space-y-3" ref=${box} onScroll=${e=>{const b=e.target;stick.current=b.scrollHeight-b.scrollTop-b.clientHeight<60}}>
     ${more&&ms.length>=100&&html`<button class="ghost tap w-full justify-center" onClick=${older}>Carregar mensagens anteriores</button>`}
     ${ms.length===0&&html`<p class="text-sm text-center" style=${{color:M}}>Ainda não há mensagens. Escreve a primeira!</p>`}
@@ -253,7 +256,7 @@ function Chat({user,accts,open,setOpen}){
       <div class="text-xs" style=${{color:me?"var(--g)":M}}><b>${a.disp||m.n}</b> · ${m.ts?new Date(m.ts).toLocaleString("pt-PT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):""}</div>
       <div class="text-sm whitespace-pre-wrap">${m.t}</div></div></div>`})}</div>
    ${er&&html`<p class="px-4 text-xs text-red-400">${er}</p>`}
-   <div class="flex gap-2 p-3"><input class="inp" placeholder="Escreve uma mensagem…" maxlength="500" value=${tx} onInput=${e=>setTx(e.target.value)} onKeyDown=${e=>e.key==="Enter"&&send()}/><button class="btn tap" style=${{padding:"0 .9rem"}} aria-label="Enviar" onClick=${send}><${I} n="send" s=${18}/></button></div>`}
+   <div class="flex gap-2 p-3">${guest?html`<button class="btn tap w-full" onClick=${ask}><${I} n="lock" s=${16}/> Entrar para escrever</button>`:html`<input class="inp" placeholder="Escreve uma mensagem…" maxlength="500" value=${tx} onInput=${e=>setTx(e.target.value)} onKeyDown=${e=>e.key==="Enter"&&send()}/><button class="btn tap" style=${{padding:"0 .9rem"}} aria-label="Enviar" onClick=${send}><${I} n="send" s=${18}/></button>`}</div>`}
   </aside><//>`;
 }
 function Discord(){
@@ -320,31 +323,31 @@ function App(){
  const [maps,setMaps]=useState(SEED);const [set,setSet]=useState(false);const pwa=usePWA();const [dis,setDis]=useState(false);const toast=pwa.upd&&!dis?html`<${Toast} onClose=${()=>setDis(true)}/>`:null;
  const [fb,setFb]=useState({});const [menu,setMenu]=useState(false);const [chat,setChat]=useState(false);
  const eff=Object.fromEntries(Object.entries(accts).map(([k,x])=>{const f=fb[k];return [k,f&&(f.ts||0)>(x.pu||0)?{...x,...["disp","bio","avatar","faceit"].reduce((o,z)=>{if(f[z]!==undefined)o[z]=f[z];return o},{})}:x]}));
- useEffect(()=>{if(!user)return;
-  if(!LK.db){try{const l=JSON.parse(localStorage.getItem("fwt-prof-"+user));if(l)setFb(f=>({...f,[user]:l}))}catch(e){}return}
-  let on=true;const f=async()=>{try{const r=await fetch(LK.db.replace(/\/+$/,"")+"/profiles.json",{cache:"no-store"});if(r.ok){const j=await r.json();if(on&&j)setFb(j)}}catch(e){}};f();const i=setInterval(f,60000);return()=>{on=false;clearInterval(i)}},[user]);
+ useEffect(()=>{
+  if(!LK.db){try{if(user){const l=JSON.parse(localStorage.getItem("fwt-prof-"+user));if(l)setFb(f=>({...f,[user]:l}))}}catch(e){}return}
+  let on=true;const f=async()=>{try{const r=await fetch(DB()+"/profiles.json",{cache:"no-store"});if(r.ok){const j=await r.json();if(on&&j)setFb(j)}}catch(e){}};f();const i=setInterval(f,60000);return()=>{on=false;clearInterval(i)}},[user]);
  useEffect(()=>{if(!menu)return;const h=e=>{if(!e.target.closest(".pm"))setMenu(false)};document.addEventListener("click",h);return()=>document.removeEventListener("click",h)},[menu]);
  const saveProfile=async(u,p)=>{const o={disp:p.disp,bio:p.bio||"",faceit:p.faceit||"",avatar:p.avatar||""};setFb(f=>({...f,[u]:{...o,ts:Date.now()}}));
-  if(LK.db){try{await fetch(LK.db.replace(/\/+$/,"")+"/profiles/"+u+".json",{method:"PUT",body:JSON.stringify({...o,ts:{".sv":"timestamp"}})})}catch(e){}}
+  if(LK.db){try{await fetch(DB()+"/profiles/"+u+".json",{method:"PUT",body:JSON.stringify({...o,ts:{".sv":"timestamp"}})})}catch(e){}}
   else{try{localStorage.setItem("fwt-prof-"+u,JSON.stringify({...o,ts:Date.now()}))}catch(e){}}};
- if(!user)return html`<${Login} accts=${accts} onLogin=${k=>{setUser(k);setTab("hub")}}/>${toast}`;
- const a=eff[user]||accts[user];
+ const guest=!user;const [lg,setLg]=useState(null);
+ const a=eff[user]||accts[user]||{disp:"",admin:false};
  const items=MENU.filter(m=>m.on);
  const tabs=[...items.map(m=>[m.id,m.icon,m.label,m]),...(a.admin?[["config","sl","Configuração",null]]:[])];
  const cur=tabs.some(x=>x[0]===tab)?tab:(tabs[0]?tabs[0][0]:"hub");const cm=items.find(m=>m.id===cur);
  const body=cur==="config"?(a.admin?html`<${Config} maps=${maps} setMaps=${setMaps}/>`:html`<${Denied}/>`):
   cm&&cm.kind==="page"?html`<${Page} m=${cm}/>`:cur==="opt"?html`<${Optimize}/>`:cur==="roster"?html`<${Roster} accts=${eff}/>`:cur==="discord"?html`<${Discord}/>`:cur==="steam"?html`<${SteamGroup}/>`:html`<${Hub} disp=${a.disp} maps=${maps}/>`;
- return html`<div class="mx-auto p-4 sm:p-6 lg:flex lg:gap-6 lg:items-start" style=${{maxWidth:1760}}><${Chat} user=${user} accts=${eff} open=${chat} setOpen=${setChat}/><div class="flex-1 min-w-0 w-full mx-auto space-y-4" style=${{maxWidth:1152}}>
+ return html`<div class="mx-auto p-4 sm:p-6 lg:flex lg:gap-6 lg:items-start" style=${{maxWidth:1760}}><${Chat} user=${user} accts=${eff} open=${chat} setOpen=${setChat} guest=${guest} ask=${()=>setLg("Entra para enviar mensagens no chat.")}/><div class="flex-1 min-w-0 w-full mx-auto space-y-4" style=${{maxWidth:1152}}>
   <header class="glass flex items-center gap-3 px-4 py-3" style=${{borderRadius:26,zIndex:30}}>
    <${Logo} s=${34}/><b class="tracking-tight">${SITE.name}</b>
-   <div class="ml-auto relative pm"><button class="ghost tap" style=${{padding:".3rem .8rem .3rem .3rem",borderRadius:99}} onClick=${()=>setMenu(!menu)}><${Av} a=${a} s=${32}/><span class="text-sm font-semibold">${a.disp}</span><${I} n="chev" s=${14}/></button>
+   ${guest?html`<button class="btn tap ml-auto" onClick=${()=>setLg("Entra para editar o teu perfil.")}><${I} n="lock" s=${16}/> Entrar</button>`:html`<div class="ml-auto relative pm"><button class="ghost tap" style=${{padding:".3rem .8rem .3rem .3rem",borderRadius:99}} onClick=${()=>setMenu(!menu)}><${Av} a=${a} s=${32}/><span class="text-sm font-semibold">${a.disp}</span><${I} n="chev" s=${14}/></button>
    ${menu&&html`<div class="glass fade p-2 w-56" style=${{position:"absolute",right:0,marginTop:8,borderRadius:20}}>
     <div class="px-3 py-2 text-xs" style=${{color:M}}>@${user}${a.admin?" · Admin":""}</div>
     <button class="ghost tap w-full" style=${{justifyContent:"flex-start"}} onClick=${()=>{setMenu(false);setSet(true)}}><${I} n="user" s=${16}/> Editar perfil</button>
-    <button class="ghost tap w-full mt-1" style=${{justifyContent:"flex-start",color:"#f87171"}} onClick=${()=>{try{localStorage.removeItem("fwt-login")}catch(e){}setMenu(false);setUser(null)}}><${I} n="out" s=${16}/> Terminar sessão</button></div>`}</div></header>
+    <button class="ghost tap w-full mt-1" style=${{justifyContent:"flex-start",color:"#f87171"}} onClick=${()=>{try{localStorage.removeItem("fwt-login")}catch(e){}setMenu(false);setUser(null)}}><${I} n="out" s=${16}/> Terminar sessão</button></div>`}</div>`}</header>
   <nav class="glass nav flex gap-1 p-1.5" style=${{borderRadius:22}}>${tabs.map(([id,ic,l,m])=>html`<button key=${id} onClick=${()=>{if(m&&m.kind==="link"&&m.url)window.open(m.url,"_blank","noopener");else setTab(id)}} class="tap flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-semibold whitespace-nowrap" style=${{background:cur===id?"var(--g)":"transparent",color:cur===id?"#0d1a04":"var(--tx)"}}><${I} n=${P[ic]?ic:"link"} s=${16}/>${l}</button>`)}</nav>
   ${body}${SITE.footer&&html`<p class="text-center text-xs pt-2" style=${{color:M}}>${SITE.footer}</p>`}
-  ${toast}${set&&html`<${Settings} user=${user} acc=${a} onClose=${()=>setSet(false)} onSave=${p=>{setAccts({...accts,[user]:{...a,...p}});saveProfile(user,p)}}/>`}</div></div>`;
+  ${lg!==null&&html`<${Login} accts=${accts} reason=${lg} onClose=${()=>setLg(null)} onLogin=${k=>{setUser(k);setTab("hub");setLg(null)}}/>`}${toast}${set&&!guest&&html`<${Settings} user=${user} acc=${a} onClose=${()=>setSet(false)} onSave=${p=>{setAccts({...accts,[user]:{...a,...p}});saveProfile(user,p)}}/>`}</div></div>`;
 }
 function applyCfg(c){try{
  if(c.maps){SEED.length=0;SEED.push(...c.maps)}
