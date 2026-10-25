@@ -76,17 +76,74 @@ const ACC0={
 ACC0.oliveirexfwt={pass:"oliveirafwt",disp:"Oliveirex",steam:"https://steamcommunity.com",email:"",phone:"",hidden:true};
 const ROSTER=["konkelfwt","fergod99fwt","leodobigodefwt","oleofwt","pixkitofwt"];
 const hs=s=>{let x=5381;for(let i=0;i<s.length;i++)x=((x<<5)+x+s.charCodeAt(i))|0;return x};
-const MENU=[{"id": "hub", "label": "Hub de Treino", "icon": "map", "on": true, "kind": "builtin"}, {"id": "opt", "label": "Otimização CS2", "icon": "zap", "on": true, "kind": "builtin"}, {"id": "roster", "label": "Roster", "icon": "users", "on": true, "kind": "builtin"}, {"id": "discord", "label": "Discord", "icon": "msg", "on": true, "kind": "builtin"}, {"id": "steam", "label": "Steam Group", "icon": "shield", "on": true, "kind": "builtin"}];
+const MENU=[{"id": "hub", "label": "Hub de Treino", "icon": "map", "on": true, "kind": "builtin"}, {"id": "opt", "label": "Otimização CS2", "icon": "zap", "on": true, "kind": "builtin"}, {"id": "roster", "label": "Roster", "icon": "users", "on": true, "kind": "builtin"}, {"id": "discord", "label": "Discord", "icon": "msg", "on": true, "kind": "builtin"}, {"id": "steam", "label": "Steam Group", "icon": "shield", "on": true, "kind": "builtin"}, {"id": "servers", "label": "Servidores", "icon": "db", "on": true, "kind": "builtin"}, {"id": "skins", "label": "Skins", "icon": "shield", "on": true, "kind": "builtin"}];
+const DEFMENU=JSON.parse(JSON.stringify(MENU));
 const SITE={"name": "FULL W TEAM", "sub": "Escolhe uma rotina e treina com a equipa.", "login": "Inicia sessão para continuar", "footer": ""};
-const LK={dOnline:"128",dMembers:"412",dVoice:"9",gMembers:"—",db:"",fkey:"",discord:"https://discord.gg/NgYBeKcKzn",steam:"https://steamcommunity.com/groups/fullwteam",gname:"FULL W TEAM | FWT",news:""};
+const SERVERS=[];let MAPS_TS=0;
+const LK={ejsService:"",ejsTemplate:"",ejsKey:"",dOnline:"128",dMembers:"412",dVoice:"9",gMembers:"—",db:"",fkey:"",discord:"https://discord.gg/NgYBeKcKzn",steam:"https://steamcommunity.com/groups/fullwteam",gname:"FULL W TEAM | FWT",news:""};
 const DB=()=>{let u=(LK.db||"").trim().replace(/\.json.*$/,"").replace(/\/(chat|profiles)(\/.*)?$/,"").replace(/\/+$/,"");if(u&&!/^https?:\/\//i.test(u))u="https://"+u;return u};
 const dbOk=u=>/^https:\/\/[a-z0-9.-]+\.(firebaseio\.com|firebasedatabase\.app)$/i.test(u);
 const copy=async t=>{try{await navigator.clipboard.writeText(t);return true}catch(e){return false}};
 
+const sha=async s=>[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+const mailH=e=>sha("fwt-mail:"+e.trim().toLowerCase());
+const pwH=(u,p)=>sha("fwt-pw:"+u+":"+p);
+const getOv=async u=>{if(!LK.db)return null;try{const r=await fetch(DB()+"/pw/"+encodeURIComponent(u)+".json",{cache:"no-store"});return r.ok?await r.json():null}catch(e){return null}};
+const verifyPw=async(u,p,a)=>{const ov=await getOv(u);if(ov&&ov.h&&(ov.ts||0)>(a.pwts||0))return{ok:(await pwH(u,p))===ov.h,o:1};return{ok:a.pass===p,o:0}};
+const setPw=async(u,p)=>{if(!LK.db)return false;try{const r=await fetch(DB()+"/pw/"+encodeURIComponent(u)+".json",{method:"PUT",body:JSON.stringify({h:await pwH(u,p),ts:{".sv":"timestamp"}})});return r.ok}catch(e){return false}};
+function Recover({accts,onClose,onDone}){
+ const [st,setSt]=useState("mail");const [em,setEm]=useState("");const [cd,setCd]=useState("");const [msg,setMsg]=useState("");const [busy,setBusy]=useState(false);
+ const [np,setNp]=useState("");const [nc,setNc]=useState("");const [who,setWho]=useState("");const ref=useRef({});
+ const cfg=LK.ejsService&&LK.ejsTemplate&&LK.ejsKey;
+ const send=async()=>{
+  if(!/^\S+@\S+\.\S+$/.test(em.trim())){setMsg("Escreve um e-mail válido.");return}
+  if(ref.current.last&&Date.now()-ref.current.last<60000){setMsg("Espera um minuto antes de pedir outro código.");return}
+  setBusy(true);setMsg("");
+  const eh=await mailH(em);const hits=Object.keys(accts).filter(k=>accts[k].eh===eh);
+  if(!hits.length){setBusy(false);setMsg("Não encontrei nenhuma conta com esse e-mail. Confirma o endereço ou fala com o admin.");return}
+  const code=String(crypto.getRandomValues(new Uint32Array(1))[0]%1000000).padStart(6,"0");
+  try{
+   const r=await fetch("https://api.emailjs.com/api/v1.0/email/send",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({service_id:LK.ejsService,template_id:LK.ejsTemplate,user_id:LK.ejsKey,template_params:{to_email:em.trim(),code,username:hits.join(", "),site:SITE.name}})});
+   if(!r.ok)throw 0;
+   ref.current={h:await sha("fwt-code:"+code),exp:Date.now()+6e5,tries:0,names:hits,last:Date.now()};setCd("");setSt("code");setMsg("Enviámos um código de 6 dígitos para "+em.trim()+". Vale 10 minutos.");
+  }catch(e){setMsg("Não foi possível enviar o e-mail. Tenta mais tarde ou fala com o admin.")}
+  setBusy(false)};
+ const check=async()=>{const r=ref.current;
+  if(!r.h||Date.now()>r.exp){setMsg("O código expirou. Pede outro.");setSt("mail");return}
+  if(r.tries>=5){setMsg("Demasiadas tentativas. Pede um novo código.");setSt("mail");return}
+  r.tries++;if((await sha("fwt-code:"+cd.trim()))!==r.h){setMsg("Código incorreto ("+(5-r.tries)+" tentativas restantes).");return}
+  setMsg("");if(r.names.length>1)setSt("pick");else{setWho(r.names[0]);setSt("newpw")}};
+ const save=async()=>{
+  if(np.length<6){setMsg("A nova password precisa de pelo menos 6 caracteres.");return}
+  if(np!==nc){setMsg("As passwords não coincidem.");return}
+  setBusy(true);const ok=await setPw(who,np);setBusy(false);
+  if(!ok){setMsg(LK.db?"Não foi possível guardar. Tenta de novo.":"A base de dados não está configurada; fala com o admin.");return}
+  setMsg("");setSt("done")};
+ const T={color:M};
+ return html`<div class="fixed inset-0 z-[60] flex items-center justify-center p-4 overflow-y-auto" style=${{background:"rgba(0,0,0,.6)"}} onClick=${e=>{e.stopPropagation();onClose()}}>
+  <div class="glass fade w-full max-w-sm p-6 space-y-3" onClick=${e=>e.stopPropagation()}>
+   <div class="flex items-center justify-between"><h3 class="text-xl font-extrabold">Recuperar conta</h3><button class="ghost tap" onClick=${onClose}><${I} n="x" s=${16}/></button></div>
+   ${!cfg?html`<p class="text-sm" style=${T}>A recuperação por e-mail ainda não está configurada. Fala com o admin da equipa.</p>`:html`<div class="space-y-3">
+    ${st==="mail"&&html`<p class="text-xs" style=${T}>Escreve o e-mail de recuperação da tua conta. Enviamos-te um código e o teu nome de utilizador.</p>
+     <input class="inp" type="email" placeholder="o-teu@email.com" value=${em} onInput=${e=>{setEm(e.target.value);setMsg("")}} onKeyDown=${e=>e.key==="Enter"&&send()}/>
+     <button class="btn tap w-full" disabled=${busy} onClick=${send}>${busy?"A enviar…":"Enviar código"}</button>`}
+    ${st==="code"&&html`<input class="inp" inputmode="numeric" maxlength="6" placeholder="Código de 6 dígitos" value=${cd} onInput=${e=>{setCd(e.target.value);setMsg("")}} onKeyDown=${e=>e.key==="Enter"&&check()}/>
+     <button class="btn tap w-full" onClick=${check}>Verificar código</button><button class="ghost tap w-full justify-center" onClick=${()=>{setSt("mail");setMsg("")}}>Pedir outro código</button>`}
+    ${st==="pick"&&html`<p class="text-sm">Este e-mail tem várias contas. Qual queres recuperar?</p>${ref.current.names.map(n=>html`<button key=${n} class="ghost tap w-full justify-center" onClick=${()=>{setWho(n);setSt("newpw")}}>${n}</button>`)}`}
+    ${st==="newpw"&&html`<p class="text-sm">Utilizador: <b style=${{color:"var(--g)"}}>${who}</b></p>
+     <input class="inp" type="password" placeholder="Nova password" value=${np} onInput=${e=>{setNp(e.target.value);setMsg("")}}/>
+     <input class="inp" type="password" placeholder="Confirmar nova password" value=${nc} onInput=${e=>{setNc(e.target.value);setMsg("")}}/>
+     <button class="btn tap w-full" disabled=${busy} onClick=${save}>${busy?"A guardar…":"Guardar nova password"}</button>`}
+    ${st==="done"&&html`<p class="text-sm">Password alterada. O teu utilizador é <b style=${{color:"var(--g)"}}>${who}</b>.</p><button class="btn tap w-full" onClick=${()=>onDone(who)}>Voltar ao login</button>`}
+    ${msg&&html`<p class=${"text-sm "+(/^Enviámos/.test(msg)?"":"text-red-400")} style=${/^Enviámos/.test(msg)?{color:"var(--g)"}:{}}>${msg}</p>`}</div>`}
+  </div></div>`;
+}
 function Login({accts,onLogin,onClose,reason}){
- const [u,setU]=useState("");const [p,setP]=useState("");const [err,setErr]=useState("");const [rm,setRm]=useState(false);
- const go=()=>{const k=u.trim().toLowerCase();const a=accts[k];
-  if(a&&a.pass===p){try{rm?localStorage.setItem("fwt-login",JSON.stringify({u:k,h:hs(p)})):localStorage.removeItem("fwt-login")}catch(e){}onLogin(k)}else setErr("Utilizador ou palavra-passe incorretos.")};
+ const [u,setU]=useState("");const [p,setP]=useState("");const [err,setErr]=useState("");const [rm,setRm]=useState(false);const [fail,setFail]=useState(false);const [rec,setRec]=useState(false);
+ const go=async()=>{
+  const k=u.trim().toLowerCase();const a=accts[k];
+  if(a){const v=await verifyPw(k,p,a);if(v.ok){try{rm?localStorage.setItem("fwt-login",JSON.stringify({u:k,h:hs(p),o:v.o})):localStorage.removeItem("fwt-login")}catch(e){}return onLogin(k)}}
+  setErr("Utilizador ou palavra-passe incorretos.");setFail(true)};
  return html`<div class="fixed inset-0 z-50 flex items-center justify-center p-5 overflow-y-auto" style=${{background:"rgba(0,0,0,.55)",backdropFilter:"blur(8px)"}} onClick=${onClose}><div class="glass fade w-full max-w-sm p-8" onClick=${e=>e.stopPropagation()}>
   <div class="flex flex-col items-center text-center mb-7">
    <div class="glass flex items-center justify-center mb-4" style=${{width:84,height:84,borderRadius:26}}><${Logo} s=${48}/></div>
@@ -96,23 +153,25 @@ function Login({accts,onLogin,onClose,reason}){
    <input class="inp" placeholder="Utilizador" autocapitalize="none" value=${u} onInput=${e=>{setU(e.target.value);setErr("")}} onKeyDown=${e=>e.key==="Enter"&&go()}/>
    <input class="inp" type="password" placeholder="Palavra-passe" value=${p} onInput=${e=>{setP(e.target.value);setErr("")}} onKeyDown=${e=>e.key==="Enter"&&go()}/>
    ${err&&html`<p class="text-sm text-red-400 px-1">${err}</p>`}
+   ${fail&&html`<div class="glass p-4 text-sm space-y-2" style=${{borderRadius:20}}><b>Esqueceu-se do nome ou da passe?</b><p class="text-xs" style=${{color:M}}>Recupera a conta com um código enviado para o teu e-mail de recuperação.</p><button class="btn tap w-full" onClick=${()=>setRec(true)}>Recuperar conta</button></div>`}
    <div role="switch" aria-checked=${rm} class="flex items-center justify-between px-1 cursor-pointer select-none" onClick=${()=>setRm(!rm)}><span class="text-sm">Memorizar login</span><div class=${"sw "+(rm?"on":"")}><i></i></div></div>
    <button class="btn tap w-full" onClick=${go}><${I} n="lock"/> Entrar</button>
-   <button class="ghost tap w-full justify-center" onClick=${onClose}>Continuar como visitante</button></div></div></div>`;
+   <button class="ghost tap w-full justify-center" onClick=${onClose}>Continuar como visitante</button></div></div>${rec&&html`<${Recover} accts=${accts} onClose=${()=>setRec(false)} onDone=${k=>{setRec(false);setU(k);setP("");setErr("");setFail(false)}}/>`}</div>`;
 }
 
 function Settings({user,acc,onSave,onClose}){
  const [d,setD]=useState(acc.disp);const [bio,setBio]=useState(acc.bio||"");const [fc,setFc]=useState(acc.faceit||"");const [av,setAv]=useState(acc.avatar||"");
  const [em,setEm]=useState(acc.email||"");const [ph,setPh]=useState(acc.phone||"");
  const [c,setC]=useState("");const [n,setN]=useState("");const [r,setR]=useState("");const [msg,setMsg]=useState(null);
- const save=()=>{
+ const save=async()=>{
   const patch={disp:d.trim()||acc.disp,bio:bio.trim(),faceit:fc.trim(),avatar:av,email:em.trim(),phone:ph.trim()};
   if(c||n||r){
-   if(c!==acc.pass)return setMsg({e:1,t:"A password atual está incorreta."});
+   if(!(await verifyPw(user,c,acc)).ok)return setMsg({e:1,t:"A password atual está incorreta."});
    if(n.length<6)return setMsg({e:1,t:"A nova password precisa de pelo menos 6 caracteres."});
    if(n!==r)return setMsg({e:1,t:"A confirmação não coincide com a nova password."});
-   patch.pass=n;setC("");setN("");setR("");
+   patch.pass=n;if(LK.db&&!(await setPw(user,n)))return setMsg({e:1,t:"Não foi possível guardar a nova password. Tenta de novo."});setC("");setN("");setR("");
   }
+  if(em.trim())patch.eh=await mailH(em);
   onSave(patch);setMsg({t:"Perfil guardado."});
  };
  const F=(l,v,s,o={})=>html`<label class="block"><span class="text-xs font-semibold px-1" style=${{color:M}}>${l}</span><input class="inp mt-1" value=${v} onInput=${e=>{s(e.target.value);setMsg(null)}} ...${o}/></label>`;
@@ -318,26 +377,76 @@ function usePWA(){
  return{ip,setIp,upd,stand};
 }
 const Toast=({onClose})=>html`<div class="fixed left-0 right-0 bottom-4 z-[60] flex justify-center px-4"><div class="glass fade flex items-center gap-3 px-4 py-3" style=${{borderRadius:24}}><span style=${{color:"var(--g)"}}><${I} n="rf" s=${20}/></span><div class="text-sm"><b>Nova versão disponível</b><div class="text-xs" style=${{color:M}}>Atualiza para ver as novidades.</div></div><button class="btn tap" style=${{padding:".5rem .9rem",borderRadius:14}} onClick=${()=>location.reload()}>Atualizar</button><button class="ghost tap" aria-label="Fechar" onClick=${onClose}><${I} n="x" s=${14}/></button></div></div>`;
+const WP={"Pistols":"Pistolas","SMGs":"Pistolas-metralhadoras","Rifles":"Rifles","Heavy":"Pesadas","Knives":"Facas","Gloves":"Luvas"};
+let SKC=null;
+const nz=s=>({id:s.id,name:s.name,w:(s.weapon&&(s.weapon.name||s.weapon))||"",wid:s.weapon&&s.weapon.weapon_id,wk:(s.weapon&&s.weapon.id)||"",cat:(s.category&&(s.category.name||s.category))||"Outros",rc:(s.rarity&&s.rarity.color)||"#9aa097",rn:(s.rarity&&(s.rarity.name||s.rarity))||"",pi:s.paint_index,img:s.image,st:!!s.stattrak,mn:s.min_float==null?0:s.min_float,mx:s.max_float==null?1:s.max_float});
+function Servers({guest}){
+ const [cp,setCp]=useState("");const L=SERVERS.filter(s=>s.on!==false);
+ return html`<div class="space-y-5 fade"><div><h2 class="font-bold text-xl">Servidores</h2><p class="text-sm mt-1" style=${{color:M}}>Liga-te diretamente aos servidores da equipa.</p></div>
+  ${L.length===0?html`<div class="glass p-8 text-center" style=${{color:M}}>Ainda não há servidores. O admin pode adicioná-los no painel.</div>`:html`<div class="grid gap-4 md:grid-cols-2">${L.map(s=>{
+   const addr=s.ip+":"+(s.port||"27015");const pw=!guest&&s.pass;const cmd="connect "+addr+(pw?"; password "+s.pass:"");
+   return html`<div key=${s.id} class="glass lift p-6 space-y-3 overflow-hidden"><div class="wcut" style=${{position:"absolute",right:14,top:14,width:28,height:24,background:"var(--g)",opacity:.35}}></div>
+    <span class="text-xs font-bold px-3 py-1 rounded-full" style=${{color:"var(--g)",background:"rgba(115,230,57,.15)"}}>${s.mode||"Servidor"}</span>
+    <h3 class="text-xl font-extrabold">${s.name}</h3>
+    <div class="text-sm" style=${{color:M}}>${[s.map&&"Mapa: "+s.map,s.slots&&s.slots+" slots"].filter(Boolean).join(" · ")}</div>
+    ${s.notes&&html`<p class="text-sm" style=${{color:M}}>${s.notes}</p>`}
+    <code class="block">${addr}</code>
+    ${s.pass&&html`<p class="text-xs" style=${{color:M}}>${guest?"Entra para ver a password do servidor.":"Password: "+s.pass}</p>`}
+    <div class="flex gap-2 flex-wrap"><a class="btn tap flex-1" href=${"steam://connect/"+addr+(pw?"/"+encodeURIComponent(s.pass):"")}><${I} n="play" s=${16}/> Ligar</a>
+     <button class="ghost tap" onClick=${async()=>{await copy(cmd);setCp(s.id);setTimeout(()=>setCp(""),1500)}}><${I} n=${cp===s.id?"check":"copy"} s=${14}/> ${cp===s.id?"Copiado":"Copiar comando"}</button></div></div>`})}</div>`}</div>`;
+}
+function Skins({user,guest,ask}){
+ const [all,setAll]=useState(SKC);const [er,setEr]=useState("");const [q,setQ]=useState("");const [cat,setCat]=useState("Todas");const [n,setN]=useState(48);const [sel,setSel]=useState(null);
+ const [lo,setLo]=useState({});const [fl,setFl]=useState(0.07);const [sd,setSd]=useState(0);const [stt,setStt]=useState(false);const [tag,setTag]=useState("");const [cp,setCp]=useState(false);
+ useEffect(()=>{if(SKC)return;fetch("https://bymykel.github.io/CSGO-API/api/en/skins.json").then(r=>r.json()).then(j=>{SKC=j.map(nz);setAll(SKC)}).catch(()=>setEr("Não foi possível carregar o catálogo de skins. Verifica a ligação e tenta de novo."))},[]);
+ const key="fwt-skins-"+user;
+ useEffect(()=>{if(!user)return;try{const l=JSON.parse(localStorage.getItem(key));if(l)setLo(l)}catch(e){}
+  if(LK.db)fetch(DB()+"/skins/"+encodeURIComponent(user)+".json",{cache:"no-store"}).then(r=>r.json()).then(j=>{if(j&&j.items)setLo(j.items)}).catch(()=>{})},[user]);
+ const persist=o=>{setLo(o);try{localStorage.setItem(key,JSON.stringify(o))}catch(e){}if(LK.db)fetch(DB()+"/skins/"+encodeURIComponent(user)+".json",{method:"PUT",body:JSON.stringify({items:o,ts:{".sv":"timestamp"}})}).catch(()=>{})};
+ const cats=["Todas",...Array.from(new Set((all||[]).map(s=>s.cat)))];
+ const list=(all||[]).filter(s=>(cat==="Todas"||s.cat===cat)&&(!q||s.name.toLowerCase().includes(q.toLowerCase())));
+ const open=s=>{setSel(s);setFl(Math.min(Math.max(.07,s.mn),s.mx));setSd(0);setStt(false);setTag("")};
+ const equip=()=>{if(guest){ask();return}persist({...lo,["w"+(sel.wid||sel.wk||sel.w)]:{id:sel.id,name:sel.name,w:sel.w,wid:sel.wid,pi:sel.pi,img:sel.img,rc:sel.rc,wear:+fl,seed:+sd,stattrak:!!(stt&&sel.st),tag:tag.trim()}});setSel(null)};
+ const items=Object.keys(lo).map(k=>[k,lo[k]]);
+ const exp=JSON.stringify(items.map(([k,x])=>({weapon_defindex:x.wid,weapon_paint_id:+x.pi,weapon_wear:x.wear,weapon_seed:x.seed,weapon_stattrak:x.stattrak?1:0,weapon_nametag:x.tag||null})),null,2);
+ return html`<div class="space-y-5 fade"><div><h2 class="font-bold text-xl">Skin Changer</h2><p class="text-sm mt-1" style=${{color:M}}>Escolhe skins para cada arma e guarda o teu loadout. Para aparecerem no jogo, o servidor precisa de um plugin de skins (ex.: WeaponPaints) ligado a este loadout.</p></div>
+  ${guest?html`<div class="glass p-4 text-sm flex items-center justify-between gap-3 flex-wrap" style=${{borderRadius:22}}><span>Podes explorar o catálogo. Para guardar o teu loadout, entra na tua conta.</span><button class="btn tap" onClick=${ask}><${I} n="lock" s=${16}/> Entrar</button></div>`:html`<div class="glass p-5 space-y-3"><div class="flex items-center justify-between gap-2 flex-wrap"><b>O teu loadout (${items.length})</b>${items.length>0&&html`<button class="ghost tap" onClick=${async()=>{await copy(exp);setCp(true);setTimeout(()=>setCp(false),1500)}}><${I} n=${cp?"check":"copy"} s=${14}/> ${cp?"Copiado":"Copiar JSON para o servidor"}</button>`}</div>
+   ${items.length===0?html`<p class="text-sm" style=${{color:M}}>Ainda não equipaste nenhuma skin.</p>`:html`<div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">${items.map(([k,x])=>html`<div key=${k} class="flex items-center gap-3 p-2" style=${{borderRadius:16,background:"rgba(255,255,255,.06)",borderLeft:"4px solid "+x.rc}}><img src=${x.img} alt="" loading="lazy" style=${{width:64,height:48,objectFit:"contain"}}/><div class="flex-1 min-w-0 text-xs"><b class="block truncate">${x.name}</b><span style=${{color:M}}>Float ${(+x.wear).toFixed(2)} · Seed ${x.seed}${x.stattrak?" · StatTrak":""}</span></div><button class="ghost tap" aria-label="Remover" onClick=${()=>{const o={...lo};delete o[k];persist(o)}}><${I} n="trash" s=${14}/></button></div>`)}</div>`}</div>`}
+  <div class="flex gap-2 flex-wrap"><input class="inp" style=${{maxWidth:320}} placeholder="Procurar skin (ex: AK-47 Redline)" value=${q} onInput=${e=>{setQ(e.target.value);setN(48)}}/>
+   <div class="nav flex gap-1">${cats.map(c=>html`<button key=${c} class="tap px-3 py-2 rounded-2xl text-sm font-semibold whitespace-nowrap" onClick=${()=>{setCat(c);setN(48)}} style=${{background:cat===c?"var(--g)":"rgba(255,255,255,.08)",color:cat===c?"#0d1a04":"var(--tx)"}}>${WP[c]||c}</button>`)}</div></div>
+  ${er&&html`<p class="text-sm text-red-400">${er}</p>`}${!all&&!er&&html`<p class="text-sm" style=${{color:M}}>A carregar catálogo de skins…</p>`}
+  ${all&&html`<p class="text-xs" style=${{color:M}}>${list.length} skins</p><div class="grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-4">${list.slice(0,n).map(s=>html`<button key=${s.id} class="glass lift tap p-3 text-left" style=${{borderRadius:20,borderBottom:"3px solid "+s.rc}} onClick=${()=>open(s)}><img src=${s.img} alt="" loading="lazy" style=${{width:"100%",height:90,objectFit:"contain"}}/><div class="text-xs font-semibold mt-2">${s.name}</div><div class="text-[11px]" style=${{color:s.rc}}>${s.rn}</div></button>`)}</div>
+   ${n<list.length&&html`<button class="ghost tap w-full justify-center" onClick=${()=>setN(n+48)}>Mostrar mais</button>`}`}
+  ${sel&&html`<div class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto" style=${{background:"rgba(0,0,0,.6)",backdropFilter:"blur(8px)"}} onClick=${()=>setSel(null)}><div class="glass fade w-full max-w-md p-6 space-y-3" onClick=${e=>e.stopPropagation()}>
+   <div class="flex items-center justify-between"><h3 class="text-lg font-extrabold">${sel.name}</h3><button class="ghost tap" onClick=${()=>setSel(null)}><${I} n="x" s=${16}/></button></div>
+   <img src=${sel.img} alt="" style=${{width:"100%",height:170,objectFit:"contain"}}/><div class="text-xs" style=${{color:sel.rc}}>${sel.rn} · ${sel.w}</div>
+   <label class="block text-xs" style=${{color:M}}>Float (desgaste): <b style=${{color:"var(--tx)"}}>${(+fl).toFixed(3)}</b><input type="range" min=${sel.mn} max=${sel.mx} step="0.001" value=${fl} onInput=${e=>setFl(e.target.value)} style=${{width:"100%",accentColor:"#73E639"}}/></label>
+   <div class="grid gap-3 grid-cols-2"><label class="block text-xs" style=${{color:M}}>Seed (0-1000)<input class="inp mt-1" type="number" min="0" max="1000" value=${sd} onInput=${e=>setSd(e.target.value)}/></label><label class="block text-xs" style=${{color:M}}>Nametag<input class="inp mt-1" maxlength="20" value=${tag} onInput=${e=>setTag(e.target.value)}/></label></div>
+   ${sel.st&&html`<div class="flex items-center gap-3 cursor-pointer select-none" onClick=${()=>setStt(!stt)}><div class=${"sw "+(stt?"on":"")}><i></i></div><span class="text-sm">StatTrak™</span></div>`}
+   <button class="btn tap w-full" onClick=${equip}><${I} n=${guest?"lock":"check"} s=${16}/> ${guest?"Entrar para equipar":"Equipar skin"}</button></div></div>`}</div>`;
+}
 const Page=({m})=>html`<div class="glass fade p-6 sm:p-8 space-y-4"><h2 class="text-2xl font-extrabold">${m.title||m.label}</h2><p class="whitespace-pre-wrap" style=${{color:M}}>${m.text}</p>${m.btnUrl&&html`<a class="btn tap" href=${m.btnUrl} target="_blank" rel="noopener noreferrer"><${I} n="ext" s=${16}/> ${m.btnLabel||"Abrir"}</a>`}</div>`;
 function App(){
- const [accts,setAccts]=useState(ACC0);const [user,setUser]=useState(()=>{try{const s=JSON.parse(localStorage.getItem("fwt-login"));if(s&&ACC0[s.u]&&hs(ACC0[s.u].pass)===s.h)return s.u}catch(e){}return null});const [tab,setTab]=useState("hub");
+ const [accts,setAccts]=useState(ACC0);const [user,setUser]=useState(()=>{try{const s=JSON.parse(localStorage.getItem("fwt-login"));if(s&&ACC0[s.u]&&(s.o||hs(ACC0[s.u].pass)===s.h))return s.u}catch(e){}return null});const [tab,setTab]=useState("hub");
  const [maps,setMaps]=useState(SEED);const [set,setSet]=useState(false);const pwa=usePWA();const [dis,setDis]=useState(false);const toast=pwa.upd&&!dis?html`<${Toast} onClose=${()=>setDis(true)}/>`:null;
  const [fb,setFb]=useState({});const [menu,setMenu]=useState(false);const [chat,setChat]=useState(false);
- const eff=Object.fromEntries(Object.entries(accts).map(([k,x])=>{const f=fb[k];return [k,f&&(f.ts||0)>(x.pu||0)?{...x,...["disp","bio","avatar","faceit"].reduce((o,z)=>{if(f[z]!==undefined)o[z]=f[z];return o},{})}:x]}));
+ const eff=Object.fromEntries(Object.entries(accts).map(([k,x])=>{const f=fb[k];return [k,f&&(f.ts||0)>(x.pu||0)?{...x,...["disp","bio","avatar","faceit","eh"].reduce((o,z)=>{if(f[z]!==undefined)o[z]=f[z];return o},{})}:x]}));
  useEffect(()=>{
   if(!LK.db){try{if(user){const l=JSON.parse(localStorage.getItem("fwt-prof-"+user));if(l)setFb(f=>({...f,[user]:l}))}}catch(e){}return}
   let on=true;const f=async()=>{try{const r=await fetch(DB()+"/profiles.json",{cache:"no-store"});if(r.ok){const j=await r.json();if(on&&j)setFb(j)}}catch(e){}};f();const i=setInterval(f,60000);return()=>{on=false;clearInterval(i)}},[user]);
  useEffect(()=>{if(!menu)return;const h=e=>{if(!e.target.closest(".pm"))setMenu(false)};document.addEventListener("click",h);return()=>document.removeEventListener("click",h)},[menu]);
- const saveProfile=async(u,p)=>{const o={disp:p.disp,bio:p.bio||"",faceit:p.faceit||"",avatar:p.avatar||""};setFb(f=>({...f,[u]:{...o,ts:Date.now()}}));
+ const saveProfile=async(u,p)=>{const o={disp:p.disp,bio:p.bio||"",faceit:p.faceit||"",avatar:p.avatar||"",...(p.eh?{eh:p.eh}:{})};setFb(f=>({...f,[u]:{...o,ts:Date.now()}}));
   if(LK.db){try{await fetch(DB()+"/profiles/"+u+".json",{method:"PUT",body:JSON.stringify({...o,ts:{".sv":"timestamp"}})})}catch(e){}}
   else{try{localStorage.setItem("fwt-prof-"+u,JSON.stringify({...o,ts:Date.now()}))}catch(e){}}};
+ const saveMaps=m=>{setMaps(m);if(LK.db&&(eff[user]||{}).admin)fetch(DB()+"/maps.json",{method:"PUT",body:JSON.stringify({list:m,ts:{".sv":"timestamp"}})}).catch(()=>{})};
+ useEffect(()=>{if(!LK.db)return;let on=true;(async()=>{try{const r=await fetch(DB()+"/maps.json",{cache:"no-store"});const j=await r.json();if(on&&j&&j.list&&(j.ts||0)>MAPS_TS)setMaps(j.list)}catch(e){}})();return()=>{on=false}},[]);
  const guest=!user;const [lg,setLg]=useState(null);
  const a=eff[user]||accts[user]||{disp:"",admin:false};
  const items=MENU.filter(m=>m.on);
  const tabs=[...items.map(m=>[m.id,m.icon,m.label,m]),...(a.admin?[["config","sl","Configuração",null]]:[])];
  const cur=tabs.some(x=>x[0]===tab)?tab:(tabs[0]?tabs[0][0]:"hub");const cm=items.find(m=>m.id===cur);
- const body=cur==="config"?(a.admin?html`<${Config} maps=${maps} setMaps=${setMaps}/>`:html`<${Denied}/>`):
-  cm&&cm.kind==="page"?html`<${Page} m=${cm}/>`:cur==="opt"?html`<${Optimize}/>`:cur==="roster"?html`<${Roster} accts=${eff}/>`:cur==="discord"?html`<${Discord}/>`:cur==="steam"?html`<${SteamGroup}/>`:html`<${Hub} disp=${a.disp} maps=${maps}/>`;
+ const body=cur==="config"?(a.admin?html`<${Config} maps=${maps} setMaps=${saveMaps}/>`:html`<${Denied}/>`):
+  cm&&cm.kind==="page"?html`<${Page} m=${cm}/>`:cur==="opt"?html`<${Optimize}/>`:cur==="servers"?html`<${Servers} guest=${guest}/>`:cur==="skins"?html`<${Skins} user=${user} guest=${guest} ask=${()=>setLg("Entra para guardar o teu loadout de skins.")}/>`:cur==="roster"?html`<${Roster} accts=${eff}/>`:cur==="discord"?html`<${Discord}/>`:cur==="steam"?html`<${SteamGroup}/>`:html`<${Hub} disp=${a.disp} maps=${maps}/>`;
  return html`<div class="mx-auto p-4 sm:p-6 lg:flex lg:gap-6 lg:items-start" style=${{maxWidth:1760}}><${Chat} user=${user} accts=${eff} open=${chat} setOpen=${setChat} guest=${guest} ask=${()=>setLg("Entra para enviar mensagens no chat.")}/><div class="flex-1 min-w-0 w-full mx-auto space-y-4" style=${{maxWidth:1152}}>
   <header class="glass flex items-center gap-3 px-4 py-3" style=${{borderRadius:26,zIndex:30}}>
    <${Logo} s=${34}/><b class="tracking-tight">${SITE.name}</b>
@@ -348,13 +457,13 @@ function App(){
     <button class="ghost tap w-full mt-1" style=${{justifyContent:"flex-start",color:"#f87171"}} onClick=${()=>{try{localStorage.removeItem("fwt-login")}catch(e){}setMenu(false);setUser(null)}}><${I} n="out" s=${16}/> Terminar sessão</button></div>`}</div>`}</header>
   <nav class="glass nav flex gap-1 p-1.5" style=${{borderRadius:22}}>${tabs.map(([id,ic,l,m])=>html`<button key=${id} onClick=${()=>{if(m&&m.kind==="link"&&m.url)window.open(m.url,"_blank","noopener");else setTab(id)}} class="tap flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-semibold whitespace-nowrap" style=${{background:cur===id?"var(--g)":"transparent",color:cur===id?"#0d1a04":"var(--tx)"}}><${I} n=${P[ic]?ic:"link"} s=${16}/>${l}</button>`)}</nav>
   ${body}${SITE.footer&&html`<p class="text-center text-xs pt-2" style=${{color:M}}>${SITE.footer}</p>`}
-  ${lg!==null&&html`<${Login} accts=${accts} reason=${lg} onClose=${()=>setLg(null)} onLogin=${k=>{setUser(k);setTab("hub");setLg(null)}}/>`}${toast}${set&&!guest&&html`<${Settings} user=${user} acc=${a} onClose=${()=>setSet(false)} onSave=${p=>{setAccts({...accts,[user]:{...a,...p}});saveProfile(user,p)}}/>`}</div></div>`;
+  ${lg!==null&&html`<${Login} accts=${eff} reason=${lg} onClose=${()=>setLg(null)} onLogin=${k=>{setUser(k);setTab("hub");setLg(null)}}/>`}${toast}${set&&!guest&&html`<${Settings} user=${user} acc=${a} onClose=${()=>setSet(false)} onSave=${p=>{setAccts({...accts,[user]:{...a,...p}});saveProfile(user,{...p,eh:p.eh!==undefined?p.eh:a.eh})}}/>`}</div></div>`;
 }
-function applyCfg(c){try{
+function applyCfg(c){try{if(c.servers){SERVERS.length=0;SERVERS.push(...c.servers)}MAPS_TS=c.mapsTs||0;
  if(c.maps){SEED.length=0;SEED.push(...c.maps)}
  if(c.accounts){Object.keys(ACC0).forEach(k=>delete ACC0[k]);Object.assign(ACC0,c.accounts)}
  if(c.roster){ROSTER.length=0;ROSTER.push(...c.roster.filter(k=>ACC0[k]))}
- if(c.menu&&c.menu.length){MENU.length=0;MENU.push(...c.menu)}if(c.site){Object.assign(SITE,c.site);document.title=SITE.name}if(c.links)Object.assign(LK,c.links);if(c.news!==undefined)LK.news=c.news}catch(e){}}
+ if(c.menu&&c.menu.length){MENU.length=0;MENU.push(...c.menu);DEFMENU.forEach(x=>{if(!MENU.some(m=>m.id===x.id))MENU.push(x)})}if(c.site){Object.assign(SITE,c.site);document.title=SITE.name}if(c.links)Object.assign(LK,c.links);if(c.news!==undefined)LK.news=c.news}catch(e){}}
 const go=()=>ReactDOM.createRoot(document.getElementById("root")).render(html`<${App}/>`);
 fetch("config.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(c=>{if(c)applyCfg(c)}).catch(()=>{}).then(go);
 </script>
