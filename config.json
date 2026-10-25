@@ -101,7 +101,8 @@
     "discord": "https://discord.gg/NgYBeKcKzn",
     "steam": "https://steamcommunity.com/groups/fullwteam",
     "gname": "FULL W TEAM | FWT",
-    "db": "https://fwtsite-default-rtdb.firebaseio.com/"
+    "db": "https://fwtsite-default-rtdb.firebaseio.com/",
+    "dOnline": "ND"
   },
   "news": "SITE AINDA EM DESENVOLVIMENTO, QUALQUER BUG NO SITE REPORTEM NO SERVIDOR DO DISCORD\n",
   "site": {
